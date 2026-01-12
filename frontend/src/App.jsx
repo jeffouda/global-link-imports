@@ -6,6 +6,10 @@ import DashboardPage from './pages/DashboardPage';
 import HomePage from './pages/HomePage';
 import InventoryPage from './pages/InventoryPage';
 import ShipmentListPage from './pages/ShipmentListPage';
+import TrackingPage from './pages/TrackingPage';
+import CreateShipmentPage from './pages/CreateShipmentPage';
+import ShipmentDetailsPage from './pages/ShipmentDetailsPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -17,11 +21,15 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/tracking" element={<TrackingPage />} />
 
           {/* Protected Routes (Eventually) */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/shipments" element={<ShipmentListPage />} />
+          <Route path="/shipments/create" element={<CreateShipmentPage />} />
+          <Route path="/shipments/:id" element={<ShipmentDetailsPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
           {/* Catch-all Route */}
           <Route path="*" element={<NotFoundPage />} />
