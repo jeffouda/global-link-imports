@@ -1,11 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-
-// Placeholder components (We will create these files next)
-const Login = () => <h1>Login Page (Squad 1)</h1>;
-const Dashboard = () => <h1>Dashboard (Squad 2)</h1>;
-const NotFound = () => <h1>404 - Page Not Found</h1>;
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -13,14 +10,14 @@ function App() {
       <div className="container mt-4">
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
           {/* Protected Routes (Eventually) */}
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* Catch-all Route */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
     </Router>
