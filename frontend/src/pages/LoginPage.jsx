@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Component for user login
 const LoginPage = () => {
   return (
     <div>
