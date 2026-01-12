@@ -2,6 +2,7 @@ from app import db
 from app.models.shipment import Shipment
 from app.models.shipment_item import ShipmentItem
 from datetime import datetime
+import uuid
 
 
 def create_shipment_logic(data, user_id):
@@ -18,11 +19,16 @@ def create_shipment_logic(data, user_id):
     """
     try:
         # 1. Create the Shipment record
+        tracking_number = str(uuid.uuid4())[
+            :8
+        ].upper()  # Generate unique tracking number
         new_shipment = Shipment(
+            tracking_number=tracking_number,
+            origin=data.get("origin", "Nairobi"),  # Default origin
             destination=data.get("destination"),
             status="Pending",
             payment_status="Unpaid",
-            customer_id=user_id,
+            user_id=user_id,
             created_at=datetime.utcnow(),
         )
 
