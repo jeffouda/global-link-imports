@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -10,8 +12,9 @@ function App() {
       <div className="container mt-4">
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* Protected Routes (Eventually) */}
           <Route path="/dashboard" element={<DashboardPage />} />
