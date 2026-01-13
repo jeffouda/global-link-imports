@@ -1,31 +1,28 @@
 import React from "react";
 import { Link, Outlet } from "react-router-dom";
 
+import { NAV_LINKS } from "../routes/navLinks";
+
 const Layout = ({ userRole }) => {
   return (
     <div className="app-container">
       <header className="header">
         <h1>Global Link Imports</h1>
+
         <nav className="nav">
-          <Link to="/">Home</Link>
-
-          {/* Dashboard is only for admin */}
-          {userRole === "admin" && <Link to="/dashboard">Dashboard</Link>}
-
-          {/* New Shipment only for customers */}
-          {userRole === "customer" && (
-            <Link to="/new-shipment">New Shipment</Link>
-          )}
-
-          {/* Tracking available for both customers and drivers */}
-          {(userRole === "customer" || userRole === "driver") && (
-            <Link to="/tracking">Tracking</Link>
+          {/* Filters links based on the user's role automatically */}
+          {NAV_LINKS.filter((link) => link.roles.includes(userRole)).map(
+            (link) => (
+              <Link key={link.path} to={link.path} style={{ marginRight: "1rem" }}>
+                {link.label}
+              </Link>
+            )
           )}
         </nav>
       </header>
 
       <main className="main">
-        <Outlet /> {/* Renders the child route page */}
+        <Outlet />
       </main>
 
       <footer className="footer">
