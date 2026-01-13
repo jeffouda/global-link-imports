@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Homepage from "./pages/Homepage";
@@ -11,6 +12,15 @@ import DashboardPage from "./pages/DashboardPage";
 import NewShipmentPage from "./pages/NewShipmentPage";
 import TrackingPage from "./pages/TrackingPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+
+// Reusable ProtectedRoute component
+function ProtectedRoute({ allowedRoles, userRole, children }) {
+  return allowedRoles.includes(userRole) ? (
+    children
+  ) : (
+    <Navigate to="/unauthorized" />
+  );
+}
 
 function App() {
   const [userRole, setUserRole] = useState("customer"); // default role
@@ -33,39 +43,36 @@ function App() {
       </div>
 
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<Layout userRole={userRole} />}>
           <Route index element={<Homepage />} />
 
           <Route
             path="dashboard"
             element={
-              userRole === "admin" ? (
+              <ProtectedRoute allowedRoles={["admin"]} userRole={userRole}>
                 <DashboardPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
+              </ProtectedRoute>
             }
           />
 
           <Route
             path="new-shipment"
             element={
-              userRole === "customer" ? (
+              <ProtectedRoute allowedRoles={["customer"]} userRole={userRole}>
                 <NewShipmentPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
+              </ProtectedRoute>
             }
           />
 
           <Route
             path="tracking"
             element={
-              userRole === "customer" || userRole === "driver" ? (
+              <ProtectedRoute
+                allowedRoles={["customer", "driver"]}
+                userRole={userRole}
+              >
                 <TrackingPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
+              </ProtectedRoute>
             }
           />
 
