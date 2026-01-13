@@ -20,7 +20,7 @@ npm install react-router-dom lucide-react axios react-hook-form
 
 3. Tailwind CSS Setup
    Step A: Install Tailwind CSS
-   npm install -D tailwindcss@3 postcss autoprefixer
+   npm install -D tailwindcss postcss autoprefixer
    npx tailwindcss init -p
 
 Step B: Configure Tailwind
