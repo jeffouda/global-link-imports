@@ -1,13 +1,19 @@
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom";
 
-// Home page component
-const HomePage = () => {
+const Homepage = () => {
   return (
-    <div>
-      <h1>Welcome to GlobaLink</h1>
-      <p>Your global shipping solution.</p>
+    <div className="homepage">
+      <h2>Welcome to Global Link Imports</h2>
+      <p>
+        Track shipments, manage deliveries, and monitor your orders all in one
+        place.
+      </p>
+      <Link to="/dashboard">
+        <button>Go to Dashboard</button>
+      </Link>
     </div>
   );
 };
 
-export default HomePage;
+export default Homepage;

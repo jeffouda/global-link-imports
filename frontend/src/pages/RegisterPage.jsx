@@ -1,12 +1,11 @@
-import React from 'react';
+// This page renders the registration form centered on the screen
+import RegisterForm from "../components/RegisterForm";
 
-const RegisterPage = () => {
+export default function RegisterPage() {
   return (
-    <div>
-      <h1>Register</h1>
-      <p>Create a new account.</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {/* Render the registration form */}
+      <RegisterForm />
     </div>
   );
-};
-
-export default RegisterPage;
+}
