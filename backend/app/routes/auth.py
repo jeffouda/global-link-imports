@@ -5,8 +5,9 @@ from app.schemas import user_register_schema, user_login_schema, user_schema
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
-    jwt_refresh_token_required,
+    jwt_required,
     get_jwt_identity,
+    get_jwt,
 )
 
 # Define Blueprint
@@ -79,9 +80,11 @@ def login():
 
 # REFRESH TOKEN
 @auth_bp.route("/refresh", methods=["POST"])
-@jwt_refresh_token_required
+@jwt_required()
 def refresh():
     try:
+        # For now, accept any valid JWT token and create a new access token
+        # In production, you might want to restrict this to refresh tokens only
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
 

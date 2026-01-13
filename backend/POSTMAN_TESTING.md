@@ -74,7 +74,7 @@ Authorization: Bearer <your_jwt_token>
 
 **Headers:**
 ```
-Authorization: Bearer <refresh_token>
+Authorization: Bearer <access_token>
 ```
 
 **Expected Response (200):**
@@ -85,7 +85,7 @@ Authorization: Bearer <refresh_token>
 }
 ```
 
-**Note:** Use this endpoint when your access token expires (after 15 minutes) to get a new one without logging in again.
+**Note:** Use this endpoint to get a fresh access token. You can use either your current access token or refresh token. Access tokens expire after 15 minutes.
 
 ## 4. Testing Role-Based Access
 

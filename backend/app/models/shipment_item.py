@@ -7,16 +7,11 @@ class ShipmentItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    shipment_id = db.Column(
-        db.Integer,
-        db.ForeignKey("shipments.id"),
-        nullable=False
-    )
+    shipment_id = db.Column(db.Integer, db.ForeignKey("shipments.id"), nullable=False)
 
-    name = db.Column(db.String(255), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
     quantity = db.Column(db.Integer, nullable=False, default=1)
 
-    weight = db.Column(db.Float, nullable=True)
-
-    # Removed to_dict method - using Marshmallow schemas for serialization
+    # Relationships
+    product = db.relationship("Product", backref="shipment_items")

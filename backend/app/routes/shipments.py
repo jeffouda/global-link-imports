@@ -3,7 +3,6 @@ from flask_jwt_extended import get_jwt_identity
 from app import db
 from app.models.shipment import Shipment
 from app.models.shipment_item import ShipmentItem
-from app.services.shipment_service import create_shipment_logic
 from app.schemas import (
     shipments_schema,
     shipment_schema,
@@ -11,6 +10,8 @@ from app.schemas import (
     shipment_status_schema,
 )
 from app.utils.decorators import login_required, admin_required, driver_required
+from datetime import datetime
+import uuid
 
 shipment_bp = Blueprint("shipment", __name__)
 
@@ -44,7 +45,37 @@ def create_shipment():
         # Validate input data
         data = shipment_create_schema.load(request.get_json())
 
-        new_shipment = create_shipment_logic(data, user_id)
+        # 1. Create the Shipment record
+        tracking_number = str(uuid.uuid4())[
+            :8
+        ].upper()  # Generate unique tracking number
+        new_shipment = Shipment(
+            tracking_number=tracking_number,
+            origin=data.get("origin", "Nairobi"),  # Default origin
+            destination=data.get("destination"),
+            status="Pending",
+            payment_status="Unpaid",
+            user_id=user_id,
+            driver_id=data.get("driver_id"),
+            created_at=datetime.utcnow(),
+        )
+
+        # Add to session to get the ID
+        db.session.add(new_shipment)
+        db.session.flush()
+
+        # 2. Loop through items and add to the Join Table (ShipmentItem)
+        if "items" in data:
+            for item in data["items"]:
+                link = ShipmentItem(
+                    shipment_id=new_shipment.id,
+                    product_id=item["product_id"],
+                    quantity=item["quantity"],  # <-- The User Submittable Attribute
+                )
+                db.session.add(link)
+
+        # 3. Commit everything at once (Transaction)
+        db.session.commit()
         return jsonify(shipment_schema.dump(new_shipment)), 201
 
     except Exception as e:

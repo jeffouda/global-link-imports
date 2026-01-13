@@ -10,11 +10,20 @@ class Shipment(db.Model):
     status = db.Column(db.String(20), default="Pending")
     origin = db.Column(db.String(100), nullable=False)
     destination = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(255))
     payment_status = db.Column(db.String(20), default="Unpaid")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign Key: Link to the User table
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
-    # Removed to_dict method - using Marshmallow schemas for serialization
+    # Foreign Key: Link to the Driver (also a User)
+    driver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    # Relationships
+    user = db.relationship("User", backref="shipments", foreign_keys=[user_id])
+    driver = db.relationship(
+        "User", backref="driven_shipments", foreign_keys=[driver_id]
+    )
+    items = db.relationship(
+        "ShipmentItem", backref="shipment", cascade="all, delete-orphan"
+    )

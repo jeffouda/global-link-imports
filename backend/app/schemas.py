@@ -76,14 +76,14 @@ class ShipmentSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
-    # Avoid recursion by not including items in the basic shipment schema
+    # Include nested items
     items = fields.Nested(ShipmentItemSchema, many=True, exclude=("shipment",))
-    user = fields.Nested(UserSchema, dump_only=True)
 
 
 class ShipmentCreateSchema(ma.Schema):
     origin = fields.Str(required=True)
     destination = fields.Str(required=True)
+    driver_id = fields.Int(required=False, allow_none=True)
     items = fields.List(
         fields.Dict(keys=fields.Str(), values=fields.Raw()), required=True
     )

@@ -32,7 +32,7 @@ def create_shipment_logic(data, user_id):
             created_at=datetime.utcnow(),
         )
 
-        # Add to session to get the ID (but don't commit yet)
+        # Add to session to get the ID 
         db.session.add(new_shipment)
         db.session.flush()
 
@@ -42,7 +42,7 @@ def create_shipment_logic(data, user_id):
                 link = ShipmentItem(
                     shipment_id=new_shipment.id,
                     product_id=item["product_id"],
-                    quantity=item["quantity"],  # <--- The User Submittable Attribute
+                    quantity=item["quantity"],  # <-- The User Submittable Attribute
                 )
                 db.session.add(link)
 
