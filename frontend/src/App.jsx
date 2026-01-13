@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Navigate,
-  Outlet,
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Homepage from "./pages/Homepage";
@@ -13,7 +12,7 @@ import NewShipmentPage from "./pages/NewShipmentPage";
 import TrackingPage from "./pages/TrackingPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 
-// Reusable ProtectedRoute component
+// Simple protected route component
 function ProtectedRoute({ allowedRoles, userRole, children }) {
   return allowedRoles.includes(userRole) ? (
     children
@@ -27,13 +26,14 @@ function App() {
 
   return (
     <Router>
-      <div style={{ padding: "1rem", backgroundColor: "#f0f0f0" }}>
-        {/* Quick role switcher for testing */}
+      <div className="p-4 bg-gray-100">
+        {/* Role selector for testing */}
         <label>
           Select Role:{" "}
           <select
             value={userRole}
             onChange={(e) => setUserRole(e.target.value)}
+            className="border p-1 rounded"
           >
             <option value="admin">Admin</option>
             <option value="customer">Customer</option>

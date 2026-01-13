@@ -1,31 +1,36 @@
 import React from "react";
 import { Link, Outlet } from "react-router-dom";
-import { NAV_LINKS } from "../routes/navLinks";
 
 const Layout = ({ userRole }) => {
   return (
     <div className="app-container">
-      <header className="header">
-        <h1>Global Link Imports</h1>
-
-        <nav className="nav">
-          {NAV_LINKS.filter((link) => link.roles.includes(userRole)).map(
-            (link) => (
-              <Link key={link.path} to={link.path}>
-                {link.label}
-              </Link>
-            )
+      <header className="header p-4 bg-white border-b border-gray-300">
+        <h1 className="text-xl font-bold mb-2">Global Link Imports</h1>
+        <nav className="flex gap-4">
+          <Link to="/" className="hover:underline">
+            Home
+          </Link>
+          {userRole === "admin" && (
+            <Link to="/dashboard" className="hover:underline">
+              Dashboard
+            </Link>
+          )}
+          {userRole === "customer" && (
+            <Link to="/new-shipment" className="hover:underline">
+              New Shipment
+            </Link>
+          )}
+          {(userRole === "customer" || userRole === "driver") && (
+            <Link to="/tracking" className="hover:underline">
+              Tracking
+            </Link>
           )}
         </nav>
       </header>
 
-      <main className="main">
+      <main className="main-content p-4">
         <Outlet />
       </main>
-
-      <footer className="footer">
-        <p>&copy; {new Date().getFullYear()} Global Link Imports</p>
-      </footer>
     </div>
   );
 };
