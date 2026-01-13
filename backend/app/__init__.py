@@ -21,9 +21,9 @@ def create_app(config_class=Config):
 
     # Init extensions with app
     db.init_app(app)
+    migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
-    migrate.init_app(app, db)
     ma.init_app(app)
 
     # Enable CORS (Allow Frontend running on localhost:3000 to talk to backend)
