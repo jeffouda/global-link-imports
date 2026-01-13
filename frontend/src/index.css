@@ -2,78 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global Reset / Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
+/* 1. Basic Font & Color Settings */
+:root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  background-color: #f0f0f0; /* your background */
-  color: #242424; /* main text color */
+
+  /* Default to Dark Mode colors */
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 2. Body Reset */
 body {
-  display: flex;
-  flex-direction: column;
+  margin: 0;
+  min-width: 320px;
   min-height: 100vh;
+  /* Note: Removed 'display: flex' and 'place-items: center' to fix layout */
 }
 
-/* Links */
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* Headings */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-}
-
-/* Paragraphs */
-p {
-  margin-bottom: 1rem;
-}
-
-/* Lists */
-ul,
-ol {
-  list-style: none;
-}
-
-/* Buttons */
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-}
-
-/* Tailwind utility container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-/* Custom classes */
-.bg-primary {
-  background-color: #242424;
-  color: white;
-}
-
-.bg-background {
-  background-color: #f0f0f0;
+/* 3. Automatic Light Mode Support */
+/* This only changes the background and text color, nothing else */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
 }
