@@ -1,16 +1,79 @@
-# React + Vite
+. Frontend Setup (React + Tailwind)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This section explains how to set up and run the frontend of the project.
 
-Currently, two official plugins are available:
+1. Navigate to the Frontend Folder
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+From the project root:
 
-## React Compiler
+cd frontend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. Install Node Dependencies
 
-## Expanding the ESLint configuration
+This installs React, Tailwind CSS, routing, icons, API tools, and form handling libraries.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+npm install
+
+If some dependencies are missing, install them manually:
+
+npm install react-router-dom lucide-react axios react-hook-form
+
+3. Tailwind CSS Setup
+   Step A: Install Tailwind CSS
+   npm install -D tailwindcss postcss autoprefixer
+   npx tailwindcss init -p
+
+Step B: Configure Tailwind
+
+Open tailwind.config.js and ensure it includes:
+
+content: [
+"./index.html",
+"./src/**/*.{js,ts,jsx,tsx}",
+]
+
+Step C: Add Tailwind Directives
+
+Open src/index.css and add:
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+4. Start the Frontend Server
+
+Run the development server:
+
+npm run dev
+
+Or (if using Create React App):
+
+npm start
+
+The frontend will be available at:
+
+http://localhost:5173
+
+(or http://localhost:3000 for CRA)
+
+5. Frontend Tech Stack
+
+React
+
+Tailwind CSS
+
+React Router
+
+Axios
+
+Lucide React
+
+React Hook Form
+
+Notes
+
+Run npm install only once (unless dependencies change)
+
+Run npm run dev every time you start working
+
+Make sure the backend server is running for API requests
