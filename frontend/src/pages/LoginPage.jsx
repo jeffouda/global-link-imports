@@ -1,13 +1,12 @@
-import React from 'react';
+// This page renders the login form centered on the screen
+import LoginForm from "../components/LoginForm";
 
-// Component for user login
-const LoginPage = () => {
+export default function LoginPage() {
   return (
-    <div>
-      <h1>Login Page</h1>
-      <p>Please log in to continue.</p>
+    // Full screen with light gray background
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {/* Render the login form */}
+      <LoginForm />
     </div>
   );
-};
-
-export default LoginPage;
+}
