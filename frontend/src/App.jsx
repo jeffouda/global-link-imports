@@ -9,7 +9,7 @@ import {
 import Layout from "./components/Layout";
 import Homepage from "./pages/Homepage";
 import DashboardPage from "./pages/DashboardPage";
-import NewShipmentPage from "./pages/NewShipmentPage";
+import NewShipmentPage from "./pages/CreateShipmentPage";
 import TrackingPage from "./pages/TrackingPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 
