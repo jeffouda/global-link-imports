@@ -1,26 +1,18 @@
-import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import Layout from "./components/Layout";
-import Homepage from "./pages/Homepage";
-import DashboardPage from "./pages/DashboardPage";
-import NewShipmentPage from "./pages/NewShipmentPage";
-import TrackingPage from "./pages/TrackingPage";
-import UnauthorizedPage from "./pages/UnauthorizedPage";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// Reusable ProtectedRoute component (From Emmanuel's branch)
-// This handles the logic in one place instead of repeating it for every route.
-function ProtectedRoute({ allowedRoles, userRole, children }) {
-  if (allowedRoles.includes(userRole)) {
-    return children;
-  }
-  return <Navigate to="/unauthorized" replace />;
-}
+// Main App component with routing
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import HomePage from "./pages/HomePage";
+import InventoryPage from "./pages/InventoryPage";
+import ShipmentListPage from "./pages/ShipmentListPage";
+import TrackingPage from "./pages/TrackingPage";
+import CreateShipmentPage from "./pages/CreateShipmentPage";
+import ShipmentDetailsPage from "./pages/ShipmentDetailsPage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   const [userRole, setUserRole] = useState("customer"); // default role
