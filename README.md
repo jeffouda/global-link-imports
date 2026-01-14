@@ -1,79 +1,87 @@
-. Frontend Setup (React + Tailwind)
+# Global Link Imports
 
-This section explains how to set up and run the frontend of the project.
+A comprehensive logistics and shipment management platform designed to streamline global import operations. This project features a robust Flask-based backend and a modern React frontend.
 
-1. Navigate to the Frontend Folder
+##  Overview
 
-From the project root:
+Global Link Imports provides a centralized system for managing users, products, and shipments. It allows logistics teams to track the movement of goods, manage inventory, and handle authentication securely.
 
+### Key Features
+- **Shipment Tracking:** Create, update, and monitor global shipments.
+- **Product Management:** Catalog and manage imported goods.
+- **User Authentication:** Secure signup and login with role-based access.
+- **Modern Dashboard:** Interactive frontend built with React and Tailwind CSS.
+
+---
+
+##  Project Architecture
+
+The project is split into two main components:
+- **[Backend](file:///home/user/development/code/phase4/global-link-imports/backend/):** Python / Flask API with SQLAlchemy and PostgreSQL.
+- **[Frontend](file:///home/user/development/code/phase4/global-link-imports/frontend/):** React / Vite application using Tailwind CSS for styling.
+
+---
+
+##  Tech Stack
+
+### Backend
+- **Framework:** Flask
+- **Database:** PostgreSQL with SQLAlchemy ORM
+- **Migrations:** Flask-Migrate (Alembic)
+- **Security:** Flask-Bcrypt for password hashing
+- **Authentication:** Token-based (custom implementation)
+
+### Frontend
+- **Framework:** React 19 (Vite)
+- **Styling:** Tailwind CSS
+- **Routing:** React Router 7
+- **API Client:** Axios
+- **Icons:** Lucide React
+
+---
+
+##  Quick Start
+
+### 1. Prerequisites
+- Python 3.x
+- Node.js (v18+)
+- PostgreSQL
+
+### 2. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  
+pip install -r requirements.txt
+flask db upgrade
+python run.py
+```
+
+### 3. Frontend Setup
+```bash
 cd frontend
-
-2. Install Node Dependencies
-
-This installs React, Tailwind CSS, routing, icons, API tools, and form handling libraries.
-
 npm install
-
-If some dependencies are missing, install them manually:
-
-npm install react-router-dom lucide-react axios react-hook-form
-
-3. Tailwind CSS Setup
-   Step A: Install Tailwind CSS
-   npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
-
-Step B: Configure Tailwind
-
-Open tailwind.config.js and ensure it includes:
-
-content: [
-"./index.html",
-"./src/**/*.{js,ts,jsx,tsx}",
-]
-
-Step C: Add Tailwind Directives
-
-Open src/index.css and add:
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-4. Start the Frontend Server
-
-Run the development server:
-
 npm run dev
+```
 
-Or (if using Create React App):
+The application will be available at:
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5000
 
-npm start
+---
 
-The frontend will be available at:
+##  Project Structure
 
-http://localhost:5173
+```text
+.
+├── backend/            # Flask API, models, and routes
+│   └── app/            # Main application logic
+├── frontend/           # React frontend
+│   └── src/            # Components, pages, and hooks
+└── README.md           # This file
+```
 
-(or http://localhost:3000 for CRA)
+---
 
-5. Frontend Tech Stack
-
-React
-
-Tailwind CSS
-
-React Router
-
-Axios
-
-Lucide React
-
-React Hook Form
-
-Notes
-
-Run npm install only once (unless dependencies change)
-
-Run npm run dev every time you start working
-
-Make sure the backend server is running for API requests
+##  License
+[MIT](LICENSE)
