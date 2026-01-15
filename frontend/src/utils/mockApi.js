@@ -15,7 +15,7 @@ const DEFAULT_SHIPMENTS = [
     status: 'In Transit',
     payment: 'Paid',
     estDelivery: '2023-01-15',
-    customer_id: 3,
+    userId: 3,
     driverId: 2
   },
   {
@@ -27,7 +27,7 @@ const DEFAULT_SHIPMENTS = [
     status: 'Pending',
     payment: 'Unpaid',
     estDelivery: '2023-01-16',
-    customer_id: 3,
+    userId: 3,
     driverId: null
   }
 ];
@@ -127,7 +127,7 @@ export const createShipment = (data) => {
         destination: data.destination,
         payment: 'Unpaid',
         status: 'Pending',
-        customer_id: data.userId,
+        userId: data.userId,
         driverId: null,
         created_at: new Date().toISOString(),
         items: data.items,

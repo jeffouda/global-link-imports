@@ -43,7 +43,7 @@ const DashboardPage = () => {
       status: 'Delivered',
       payment: 'Paid',
       estDelivery: '2023-01-10',
-      customer_id: 3,
+      userId: 3,
       driverId: 2
     },
     {
@@ -55,7 +55,7 @@ const DashboardPage = () => {
       status: 'In Transit',
       payment: 'Paid',
       estDelivery: '2023-01-17',
-      customer_id: 3,
+      userId: 3,
       driverId: null
     },
     {
@@ -67,7 +67,7 @@ const DashboardPage = () => {
       status: 'Pending',
       payment: 'Unpaid',
       estDelivery: '2023-01-18',
-      customer_id: 3,
+      userId: 3,
       driverId: null
     }
   ];
@@ -88,7 +88,7 @@ const DashboardPage = () => {
 
 
   // Derived variables (filter logic)
-  const customerShipments = shipments.filter(s => s.customer_id === user.id);
+  const customerShipments = shipments.filter(s => s.userId === user.id);
   const driverShipmentsFiltered = shipments.filter(s => Number(s.driverId) === Number(user.id));
   const driverShipments = driverShipmentsFiltered.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
