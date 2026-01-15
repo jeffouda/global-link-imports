@@ -2,7 +2,7 @@
 // Handles user registration with name/email/password and role selection
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-//import BASE_URL from "../utils/api";
+import BASE_URL from "../utils/api";
 
 
 export default function RegisterForm() {
