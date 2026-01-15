@@ -20,7 +20,7 @@ const DashboardPage = () => {
       payment: 'Paid',
       estDelivery: '2023-01-15',
       customer_id: 3,
-      driver_id: 2
+      driverId: 2
     },
     {
       id: 2,
@@ -44,7 +44,7 @@ const DashboardPage = () => {
       payment: 'Paid',
       estDelivery: '2023-01-10',
       customer_id: 3,
-      driver_id: 2
+      driverId: 2
     },
     {
       id: 4,
@@ -56,7 +56,7 @@ const DashboardPage = () => {
       payment: 'Paid',
       estDelivery: '2023-01-17',
       customer_id: 3,
-      driver_id: null
+      driverId: null
     },
     {
       id: 5,
@@ -68,7 +68,7 @@ const DashboardPage = () => {
       payment: 'Unpaid',
       estDelivery: '2023-01-18',
       customer_id: 3,
-      driver_id: null
+      driverId: null
     }
   ];
 
@@ -78,9 +78,8 @@ const DashboardPage = () => {
   const [formData, setFormData] = useState({});
 
   const MOCK_DRIVERS = [
-    { id: 2, name: 'John Doe (Driver)' },
-    { id: 4, name: 'Jane Smith (Driver)' },
-    { id: 5, name: 'Mike Ross (Driver)' }
+    { id: 2, name: 'Driver User', email: 'driver@global.com' },
+    { id: 5, name: 'Second Driver' }
   ];
 
   useEffect(() => {
@@ -90,7 +89,7 @@ const DashboardPage = () => {
 
   // Derived variables (filter logic)
   const customerShipments = shipments.filter(s => s.customer_id === user.id);
-  const driverShipmentsFiltered = shipments.filter(s => Number(s.driver_id) === Number(user.id));
+  const driverShipmentsFiltered = shipments.filter(s => Number(s.driverId) === Number(user.id));
   const driverShipments = driverShipmentsFiltered.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
@@ -110,10 +109,10 @@ const DashboardPage = () => {
   };
 
   const adminStats = [
-    { icon: <Box className="w-6 h-6" />, value: 12, label: 'Total Shipments' },
-    { icon: <Clock className="w-6 h-6" />, value: 3, label: 'Pending', color: 'text-orange-600' },
-    { icon: <Truck className="w-6 h-6" />, value: 5, label: 'In Transit', color: 'text-blue-600' },
-    { icon: <DollarSign className="w-6 h-6" />, value: 2, label: 'Payment Pending', color: 'text-red-600' }
+    { icon: <Box className="w-6 h-6" />, value: shipments.length, label: 'Total Shipments' },
+    { icon: <Clock className="w-6 h-6" />, value: shipments.filter(s => s.status === 'Pending').length, label: 'Pending', color: 'text-orange-600' },
+    { icon: <Truck className="w-6 h-6" />, value: shipments.filter(s => s.status === 'In Transit').length, label: 'In Transit', color: 'text-blue-600' },
+    { icon: <DollarSign className="w-6 h-6" />, value: shipments.filter(s => s.payment === 'Unpaid').length, label: 'Payment Pending', color: 'text-red-600' }
   ];
 
   const driverStats = [
@@ -187,10 +186,11 @@ const DashboardPage = () => {
 
   const handleSaveChanges = async () => {
     try {
+      const cleanDriverId = formData.driverId ? parseInt(formData.driverId, 10) : null;
       const updates = {
         id: editingShipment.id,
         status: formData.status,
-        driver_id: formData.driver_id ? parseInt(formData.driver_id, 10) : null
+        driverId: cleanDriverId
       };
       if (user.role === 'admin') {
         updates.payment = formData.payment;
@@ -380,7 +380,7 @@ const DashboardPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {shipment.driver_id ? MOCK_DRIVERS.find(d => d.id === shipment.driver_id)?.name || 'Unknown Driver' : <span className="text-red-500">Unassigned</span>}
+                        {shipment.driverId ? MOCK_DRIVERS.find(d => d.id === shipment.driverId)?.name || 'Unknown Driver' : <span className="text-red-500">Unassigned</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.estDelivery}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -413,8 +413,8 @@ const DashboardPage = () => {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Assign Driver</label>
                 <select
-                  value={formData.driver_id || ''}
-                  onChange={(e) => setFormData({ ...formData, driver_id: e.target.value ? parseInt(e.target.value) : null })}
+                  value={formData.driverId || ''}
+                  onChange={(e) => setFormData({ ...formData, driverId: e.target.value })}
                   className="w-full border border-gray-300 rounded px-3 py-2"
                 >
                   <option value="">Unassigned</option>

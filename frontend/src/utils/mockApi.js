@@ -16,7 +16,7 @@ const DEFAULT_SHIPMENTS = [
     payment: 'Paid',
     estDelivery: '2023-01-15',
     customer_id: 3,
-    driver_id: 2
+    driverId: 2
   },
   {
     id: 'GLI-2024-002',
@@ -28,13 +28,18 @@ const DEFAULT_SHIPMENTS = [
     payment: 'Unpaid',
     estDelivery: '2023-01-16',
     customer_id: 3,
-    driver_id: null
+    driverId: null
   }
 ];
 
 const getShipmentsFromStorage = () => {
   const stored = localStorage.getItem('shipments');
-  return stored ? JSON.parse(stored) : DEFAULT_SHIPMENTS;
+  if (stored) {
+    return JSON.parse(stored);
+  } else {
+    localStorage.setItem('shipments', JSON.stringify(DEFAULT_SHIPMENTS));
+    return DEFAULT_SHIPMENTS;
+  }
 };
 
 const saveShipmentsToStorage = (shipments) => {
@@ -123,7 +128,7 @@ export const createShipment = (data) => {
         payment: 'Unpaid',
         status: 'Pending',
         customer_id: data.userId,
-        driver_id: data.driverId || null,
+        driverId: null,
         created_at: new Date().toISOString(),
         items: data.items,
         route: `Nairobi → ${data.destination}`,
@@ -137,13 +142,13 @@ export const createShipment = (data) => {
   });
 };
 
-export const updateShipment = (data) => {
+export const updateShipment = (updatedData) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const shipments = getShipmentsFromStorage();
-      const index = shipments.findIndex(s => s.id === data.id);
+      const index = shipments.findIndex(s => s.id === updatedData.id);
       if (index !== -1) {
-        shipments[index] = { ...shipments[index], ...data };
+        shipments[index] = { ...shipments[index], ...updatedData };
         saveShipmentsToStorage(shipments);
         resolve(shipments[index]);
       } else {
