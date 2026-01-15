@@ -2,7 +2,9 @@
 // Handles user registration with name/email/password and role selection
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import BASE_URL from "../utils/api";
+// import BASE_URL from "../utils/api";
+import { mockRegister } from "../utils/mockApi";
+import ErrorMessage from "./ErrorMessage";
 
 
 export default function RegisterForm() {
@@ -13,23 +15,37 @@ export default function RegisterForm() {
     password: "",
     role: "customer",
   });
+  const [error, setError] = useState("");
 
   // Submit registration
   const submit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    await fetch(`${BASE_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      await mockRegister(form);
+      alert("Account created! Please login");
+      navigate("/login");
+    } catch (err) {
+      setError(err.message);
+    }
 
-    navigate("/login"); // redirect to login
+    // Comment out the real API call
+    // await fetch(`${BASE_URL}/register`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(form),
+    // });
+
+    // navigate("/login"); // redirect to login
   };
 
   return (
     <form onSubmit={submit} className="bg-white p-8 rounded shadow w-96">
       <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Register</h2>
+
+      {/* Display error message */}
+      <ErrorMessage message={error} />
 
       {/* Name */}
       <input
@@ -60,10 +76,12 @@ export default function RegisterForm() {
       {/* Role select */}
       <select
         className="border p-2 w-full mb-6"
+        value={form.role}
         onChange={(e) => setForm({ ...form, role: e.target.value })}
       >
         <option value="customer">Customer</option>
         <option value="driver">Driver</option>
+        <option value="admin">Admin</option>
       </select>
 
       {/* Submit button */}

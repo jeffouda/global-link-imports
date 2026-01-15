@@ -42,15 +42,14 @@ const Homepage = () => {
             place. Experience seamless logistics management with our modern platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/dashboard">
-              <button className="gradient-primary text-white font-semibold py-3 px-8 rounded-lg shadow-card transition duration-300 transform hover:scale-105">
-                Go to Dashboard
+            <Link to="/login">
+              <button className="border-2 border-secondary text-secondary font-semibold py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-secondary hover:text-white">
+                Login
               </button>
             </Link>
-            <Link to="/tracking">
-              <button className="btn-primary">
-                <Search className="w-4 h-4 mr-2 inline" />
-                Track Shipment
+            <Link to="/register">
+              <button className="bg-secondary text-white font-semibold py-3 px-8 rounded-lg shadow-card transition duration-300 transform hover:scale-105">
+                Get Started
               </button>
             </Link>
           </div>

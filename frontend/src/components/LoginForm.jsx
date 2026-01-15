@@ -2,12 +2,16 @@
 // Handles user login with email/password
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import ErrorMessage from "./ErrorMessage"; // displays error messages
-import BASE_URL from "../utils/api";
+// import BASE_URL from "../utils/api";
+import { mockLogin } from "../utils/mockApi";
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   // Submit login form
@@ -15,25 +19,25 @@ export default function LoginForm() {
     e.preventDefault();
     setError("");
 
-    const res = await fetch(`${BASE_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    console.log("Submitting:", { email, password });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.message || "Login failed");
+    if (!email.trim() || !password.trim()) {
+      setError("Please fill in all fields");
       return;
     }
 
-    // Save JWT and user info in localStorage
-    localStorage.setItem("token", data.access_token);
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("username", data.username);
-
-    navigate("/dashboard"); // redirect to dashboard
+    try {
+      // 1. Call the API
+      const data = await mockLogin(email, password);
+      // 2. Update Context
+      login(data);
+      // 3. Navigation
+      console.log('Login success, navigating...');
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError("Invalid credentials");
+      setPassword(""); // Clear password on error
+    }
   };
 
   return (
@@ -49,7 +53,8 @@ export default function LoginForm() {
         type="email"
         placeholder="Email"
         required
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
 
       {/* Password input */}
@@ -58,7 +63,8 @@ export default function LoginForm() {
         type="password"
         placeholder="Password"
         required
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
 
       {/* Submit button */}
