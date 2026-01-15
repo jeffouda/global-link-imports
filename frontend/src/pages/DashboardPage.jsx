@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Clock, Truck, DollarSign, Plus, Trash2, Pencil, ArrowRight, CheckCircle, Search, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { mockDeleteShipment, mockUpdateShipmentStatus, mockUpdatePaymentStatus, mockUpdateShipment } from '../utils/mockApi';
+import { deleteShipment, updateShipment, getShipments } from '../utils/mockApi';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -18,7 +18,9 @@ const DashboardPage = () => {
       items: 'Electronics',
       status: 'In Transit',
       payment: 'Paid',
-      estDelivery: '2023-01-15'
+      estDelivery: '2023-01-15',
+      customer_id: 3,
+      driver_id: 2
     },
     {
       id: 2,
@@ -28,7 +30,9 @@ const DashboardPage = () => {
       items: 'Books',
       status: 'Pending',
       payment: 'Unpaid',
-      estDelivery: '2023-01-16'
+      estDelivery: '2023-01-16',
+      customer_id: 3,
+      driver_id: null
     },
     {
       id: 3,
@@ -38,7 +42,9 @@ const DashboardPage = () => {
       items: 'Clothing',
       status: 'Delivered',
       payment: 'Paid',
-      estDelivery: '2023-01-10'
+      estDelivery: '2023-01-10',
+      customer_id: 3,
+      driver_id: 2
     },
     {
       id: 4,
@@ -48,7 +54,9 @@ const DashboardPage = () => {
       items: 'Furniture',
       status: 'In Transit',
       payment: 'Paid',
-      estDelivery: '2023-01-17'
+      estDelivery: '2023-01-17',
+      customer_id: 3,
+      driver_id: null
     },
     {
       id: 5,
@@ -58,27 +66,40 @@ const DashboardPage = () => {
       items: 'Groceries',
       status: 'Pending',
       payment: 'Unpaid',
-      estDelivery: '2023-01-18'
+      estDelivery: '2023-01-18',
+      customer_id: 3,
+      driver_id: null
     }
   ];
 
-  const [shipments, setShipments] = useState(dummyShipments);
-  const [editingShipment, setEditingShipment] = useState(null);
+  const [shipments, setShipments] = useState([]);
   const [driverSearch, setDriverSearch] = useState('');
+  const [editingShipment, setEditingShipment] = useState(null);
+
+  useEffect(() => {
+    getShipments().then(setShipments);
+  }, []);
 
   const mockDrivers = [
     { id: 2, name: 'Driver User' },
     { id: 5, name: 'John Doe' }
   ];
 
-  // Derived calculations after state
-  const assignedDeliveries = shipments.length;
-  const pendingPickup = shipments.filter(s => s.status === 'Pending').length;
-  const completedToday = shipments.filter(s => s.status === 'Delivered').length;
-
+  // Derived variables (filter logic)
+  const customerShipments = shipments.filter(s => s.customer_id === user.id);
+  const driverShipmentsFiltered = shipments.filter(s => s.driver_id === user.id);
   const driverShipments = driverShipmentsFiltered.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
+
+  // Stats calculations
+  const assignedDeliveries = driverShipmentsFiltered.length;
+  const pendingPickup = driverShipmentsFiltered.filter(s => s.status === 'Pending').length;
+  const completedToday = driverShipmentsFiltered.filter(s => s.status === 'Delivered').length;
+
+  const activeOrders = customerShipments.length;
+  const customerInTransit = customerShipments.filter(s => s.status === 'In Transit').length;
+  const customerDelivered = customerShipments.filter(s => s.status === 'Delivered').length;
 
   const adminStats = [
     { icon: <Box className="w-6 h-6" />, value: 12, label: 'Total Shipments' },
@@ -92,13 +113,6 @@ const DashboardPage = () => {
     { icon: <Clock className="w-6 h-6" />, value: pendingPickup, label: 'Pending Pickup', color: 'text-orange-600' },
     { icon: <CheckCircle className="w-6 h-6" />, value: completedToday, label: 'Completed Today', color: 'text-green-600' }
   ];
-
-  const customerShipments = shipments.filter(s => s.customer_id === user.id);
-  const activeOrders = customerShipments.length;
-  const customerInTransit = customerShipments.filter(s => s.status === 'In Transit').length;
-  const customerDelivered = customerShipments.filter(s => s.status === 'Delivered').length;
-
-  const driverShipmentsFiltered = shipments.filter(s => s.driver_id === user.id);
 
   const customerStats = [
     { icon: <Box className="w-6 h-6" />, value: activeOrders, label: 'Active Orders', color: 'text-blue-600' },
@@ -126,11 +140,14 @@ const DashboardPage = () => {
     return styles[payment] || 'bg-gray-100 text-gray-800';
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
-      mockDeleteShipment(id).then(() => {
+      try {
+        await deleteShipment(id);
         setShipments(shipments.filter(s => s.id !== id));
-      }).catch(err => alert(err.message));
+      } catch (err) {
+        alert(err.message);
+      }
     }
   };
 
@@ -138,7 +155,7 @@ const DashboardPage = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await mockUpdateShipmentStatus(id, newStatus);
+      await updateShipment({ id, status: newStatus });
       setShipments(shipments.map(s => s.id === id ? { ...s, status: newStatus } : s));
       alert(`Status updated to ${newStatus}`);
     } catch (err) {
@@ -148,12 +165,12 @@ const DashboardPage = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const updates = { status: editingShipment.status };
+      const updates = { id: editingShipment.id, status: editingShipment.status };
       if (user.role === 'admin') {
         updates.payment = editingShipment.payment;
         updates.driver_id = editingShipment.driver_id;
       }
-      await mockUpdateShipment(editingShipment.id, updates);
+      await updateShipment(updates);
       setShipments(shipments.map(s => s.id === editingShipment.id ? { ...s, ...updates } : s));
       setEditingShipment(null);
       alert('Changes saved successfully');

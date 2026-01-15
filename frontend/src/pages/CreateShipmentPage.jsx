@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapPin, Box, Plus, Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { mockCreateShipment } from '../utils/mockApi';
+import { createShipment } from '../utils/mockApi';
 
 const CreateShipmentPage = () => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const CreateShipmentPage = () => {
     }
 
     try {
-      await mockCreateShipment({ destination, items: products }, user);
+      await createShipment({ destination, items: products, userId: user.id, customer: user.username });
       alert('Shipment Created!');
       navigate('/dashboard');
     } catch (err) {
