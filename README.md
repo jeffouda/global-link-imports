@@ -58,3 +58,70 @@ source venv/bin/activate
 pip install -r requirements.txt
 flask db upgrade
 python run.py
+3. Frontend Setup
+From the project root directory:
+
+Bash
+
+cd frontend
+npm install
+Note: If dependencies fail, you can install core packages manually:
+
+Bash
+
+npm install react-router-dom lucide-react axios react-hook-form
+Run the Development Server:
+
+Bash
+
+npm run dev
+4. Tailwind Configuration (If needed)
+If you need to re-initialize Tailwind, follow these steps:
+
+Install & Init:
+
+Bash
+
+npm install -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init -p
+Configure tailwind.config.js:
+
+JavaScript
+
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+Add Directives to src/index.css:
+
+CSS
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+Access the App
+The application will be available at:
+
+Frontend: http://localhost:5173
+
+Backend API: http://localhost:5000
+
+License
+MIT
+
+
+### Final Step: Save and Commit
+Once you have replaced the content:
+1.  **Save** the file.
+2.  Run these commands in your terminal:
+    ```bash
+    git add README.md
+    git commit -m "Resolved merge conflict: merged main overview with alvin frontend instructions"
+    git push
+    ```
