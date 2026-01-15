@@ -150,17 +150,37 @@ export const mockCreateShipment = (shipmentData, user) => {
       const shipments = getShipments();
       const newShipment = {
         id: shipments.length + 1,
+        tracking: `GLI-${Date.now().toString().slice(-6)}`,
         destination: shipmentData.destination,
-        payment_status: 'Unpaid',
+        payment: 'Unpaid',
         status: 'Pending',
         customer_id: user.id,
-        driver_id: shipmentData.driver_id || null,
+        driver_id: null,
         created_at: new Date().toISOString(),
-        items: shipmentData.items
+        items: shipmentData.items,
+        route: `Nairobi → ${shipmentData.destination}`,
+        customer: user.username,
+        estDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       };
       shipments.push(newShipment);
       saveShipments(shipments);
       resolve(newShipment);
+    }, 500);
+  });
+};
+
+export const mockUpdateShipment = (id, updates) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shipments = getShipments();
+      const shipment = shipments.find(s => s.id === id);
+      if (shipment) {
+        Object.assign(shipment, updates);
+        saveShipments(shipments);
+        resolve(shipment);
+      } else {
+        reject(new Error('Shipment not found'));
+      }
     }, 500);
   });
 };

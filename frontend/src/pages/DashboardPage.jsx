@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Clock, Truck, DollarSign, Plus, Trash2, Pencil, ArrowRight, CheckCircle, Search, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
-import { mockDeleteShipment, mockUpdateShipmentStatus, mockUpdatePaymentStatus } from '../utils/mockApi';
+import { mockDeleteShipment, mockUpdateShipmentStatus, mockUpdatePaymentStatus, mockUpdateShipment } from '../utils/mockApi';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -66,12 +66,17 @@ const DashboardPage = () => {
   const [editingShipment, setEditingShipment] = useState(null);
   const [driverSearch, setDriverSearch] = useState('');
 
+  const mockDrivers = [
+    { id: 2, name: 'Driver User' },
+    { id: 5, name: 'John Doe' }
+  ];
+
   // Derived calculations after state
   const assignedDeliveries = shipments.length;
   const pendingPickup = shipments.filter(s => s.status === 'Pending').length;
   const completedToday = shipments.filter(s => s.status === 'Delivered').length;
 
-  const driverShipments = shipments.filter(shipment =>
+  const driverShipments = driverShipmentsFiltered.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
 
@@ -86,6 +91,19 @@ const DashboardPage = () => {
     { icon: <Truck className="w-6 h-6" />, value: assignedDeliveries, label: 'Assigned Deliveries', color: 'text-blue-600' },
     { icon: <Clock className="w-6 h-6" />, value: pendingPickup, label: 'Pending Pickup', color: 'text-orange-600' },
     { icon: <CheckCircle className="w-6 h-6" />, value: completedToday, label: 'Completed Today', color: 'text-green-600' }
+  ];
+
+  const customerShipments = shipments.filter(s => s.customer_id === user.id);
+  const activeOrders = customerShipments.length;
+  const customerInTransit = customerShipments.filter(s => s.status === 'In Transit').length;
+  const customerDelivered = customerShipments.filter(s => s.status === 'Delivered').length;
+
+  const driverShipmentsFiltered = shipments.filter(s => s.driver_id === user.id);
+
+  const customerStats = [
+    { icon: <Box className="w-6 h-6" />, value: activeOrders, label: 'Active Orders', color: 'text-blue-600' },
+    { icon: <Truck className="w-6 h-6" />, value: customerInTransit, label: 'In Transit', color: 'text-blue-600' },
+    { icon: <CheckCircle className="w-6 h-6" />, value: customerDelivered, label: 'Delivered', color: 'text-green-600' }
   ];
 
   const getStatusBadge = (status) => {
@@ -130,11 +148,13 @@ const DashboardPage = () => {
 
   const handleSaveChanges = async () => {
     try {
-      await mockUpdateShipmentStatus(editingShipment.id, editingShipment.status);
+      const updates = { status: editingShipment.status };
       if (user.role === 'admin') {
-        await mockUpdatePaymentStatus(editingShipment.id, editingShipment.payment);
+        updates.payment = editingShipment.payment;
+        updates.driver_id = editingShipment.driver_id;
       }
-      setShipments(shipments.map(s => s.id === editingShipment.id ? editingShipment : s));
+      await mockUpdateShipment(editingShipment.id, updates);
+      setShipments(shipments.map(s => s.id === editingShipment.id ? { ...s, ...updates } : s));
       setEditingShipment(null);
       alert('Changes saved successfully');
     } catch (err) {
@@ -150,7 +170,7 @@ const DashboardPage = () => {
       <main className="container mx-auto p-6">
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {(user.role === 'driver' ? driverStats : adminStats).map((stat, index) => (
+          {(user.role === 'driver' ? driverStats : user.role === 'customer' ? customerStats : adminStats).map((stat, index) => (
             <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
               <div className="flex items-center">
                 <div className={`mr-4 ${stat.color || 'text-gray-600'}`}>
@@ -169,11 +189,13 @@ const DashboardPage = () => {
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{user.role === 'driver' ? 'Assigned Deliveries' : 'All Shipments'}</h2>
-              {user.role !== 'driver' && (
+              <h2 className="text-xl font-semibold">
+                {user.role === 'driver' ? 'Assigned Deliveries' : user.role === 'customer' ? 'Your Orders' : 'All Shipments'}
+              </h2>
+              {user.role === 'customer' && (
                 <button onClick={() => navigate('/create-shipment')} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 flex items-center">
                   <Plus className="w-4 h-4 mr-2" />
-                  New Shipment
+                  Create Shipment
                 </button>
               )}
             </div>
@@ -218,6 +240,47 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-500">{shipment.estDelivery}</span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentBadge(shipment.payment)}`}>{shipment.payment}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : user.role === 'customer' ? (
+            <div className="p-6">
+              {customerShipments.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 mb-4">You have no active shipments</p>
+                  <button onClick={() => navigate('/create-shipment')} className="bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
+                    Create First Shipment
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {customerShipments.map((shipment) => {
+                    const [origin, destination] = shipment.route.split(' → ');
+                    return (
+                      <div key={shipment.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <span className="text-teal-600 font-semibold block">{shipment.tracking}</span>
+                            <span className="text-sm text-gray-500">Created: {shipment.estDelivery}</span>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(shipment.status)}`}>{shipment.status}</span>
+                        </div>
+                        <div className="bg-gray-100 p-3 rounded-lg flex items-center justify-between mb-4">
+                          <span className="text-gray-700">{origin}</span>
+                          <ArrowRight className="w-5 h-5 text-gray-500" />
+                          <span className="text-gray-700">{destination}</span>
+                        </div>
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Items</h4>
+                          <p className="text-gray-600">{shipment.items}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Est. Delivery: {shipment.estDelivery}</span>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentBadge(shipment.payment)}`}>{shipment.payment}</span>
                         </div>
                       </div>
@@ -312,18 +375,33 @@ const DashboardPage = () => {
               </select>
             </div>
             {user.role === 'admin' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
-                <select
-                  value={editingShipment.payment}
-                  onChange={(e) => setEditingShipment({ ...editingShipment, payment: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                >
-                  <option value="Unpaid">Unpaid</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Paid">Paid</option>
-                </select>
-              </div>
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                  <select
+                    value={editingShipment.payment}
+                    onChange={(e) => setEditingShipment({ ...editingShipment, payment: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Assign Driver</label>
+                  <select
+                    value={editingShipment.driver_id || ''}
+                    onChange={(e) => setEditingShipment({ ...editingShipment, driver_id: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  >
+                    <option value="">Unassigned</option>
+                    {mockDrivers.map(driver => (
+                      <option key={driver.id} value={driver.id}>{driver.name} (ID: {driver.id})</option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
             <div className="flex justify-end space-x-2">
               <button

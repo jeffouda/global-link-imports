@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Box, Plus, Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
+import { mockCreateShipment } from '../utils/mockApi';
 
 const CreateShipmentPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -28,7 +31,7 @@ const CreateShipmentPage = () => {
     setProducts(updated);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validation
@@ -37,12 +40,13 @@ const CreateShipmentPage = () => {
       return;
     }
 
-    // Mock save
-    console.log('Creating shipment:', { origin, destination, products, notes });
-
-    // Simulate API call
-    alert('Shipment Created!');
-    navigate('/dashboard');
+    try {
+      await mockCreateShipment({ destination, items: products }, user);
+      alert('Shipment Created!');
+      navigate('/dashboard');
+    } catch (err) {
+      alert('Error creating shipment: ' + err.message);
+    }
   };
 
   return (
