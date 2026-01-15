@@ -153,6 +153,20 @@ const DashboardPage = () => {
 
   const canUpdateStatus = ['admin', 'driver'].includes(user?.role);
 
+  const renderItems = (items) => {
+    if (!items) return 'No items';
+    if (typeof items === 'string') return items;
+    if (Array.isArray(items)) {
+      return items.map(item => {
+        if (typeof item === 'object') {
+          return `${item.product || item.product_id || 'Item'} (x${item.quantity})`;
+        }
+        return item;
+      }).join(', ');
+    }
+    return 'Unknown Format';
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     try {
       await updateShipment({ id, status: newStatus });
@@ -254,7 +268,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="mb-4">
                           <h4 className="text-sm font-medium text-gray-900 mb-2">Items</h4>
-                          <p className="text-gray-600">{shipment.items}</p>
+                          <p className="text-gray-600">{renderItems(shipment.items)}</p>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-500">{shipment.estDelivery}</span>
@@ -296,7 +310,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="mb-4">
                           <h4 className="text-sm font-medium text-gray-900 mb-2">Items</h4>
-                          <p className="text-gray-600">{shipment.items}</p>
+                          <p className="text-gray-600">{renderItems(shipment.items)}</p>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-500">Est. Delivery: {shipment.estDelivery}</span>
@@ -328,8 +342,8 @@ const DashboardPage = () => {
                     <tr key={shipment.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{shipment.tracking}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.customer}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.route}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.items}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.origin ? `${shipment.origin} → ${shipment.destination}` : shipment.route}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{renderItems(shipment.items)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {canUpdateStatus ? (
                           <select
