@@ -1,79 +1,77 @@
-. Frontend Setup (React + Tailwind)
+# Global Link Imports - Frontend
 
-This section explains how to set up and run the frontend of the project.
+This is the React-based frontend for the Global Link Imports management system. Built with Vite and Tailwind CSS, it provides a high-performance, responsive interface for managing logistics.
 
-1. Navigate to the Frontend Folder
+## Tech Stack
 
-From the project root:
+- **React 19:** Component-based UI library.
+- **Vite:** Next-generation frontend tooling for fast development.
+- **Tailwind CSS:** Utility-first CSS framework for styling.
+- **React Router 7:** Declarative routing for React.
+- **Axios:** Promise-based HTTP client for API requests.
+- **Lucide React:** Beautifully simple icons.
 
-cd frontend
+---
 
-2. Install Node Dependencies
+##  Getting Started
 
-This installs React, Tailwind CSS, routing, icons, API tools, and form handling libraries.
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
-npm install
+### Installation
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If some dependencies are missing, install them manually:
-
-npm install react-router-dom lucide-react axios react-hook-form
-
-3. Tailwind CSS Setup
-   Step A: Install Tailwind CSS
-   npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
-
-Step B: Configure Tailwind
-
-Open tailwind.config.js and ensure it includes:
-
-content: [
-"./index.html",
-"./src/**/*.{js,ts,jsx,tsx}",
-]
-
-Step C: Add Tailwind Directives
-
-Open src/index.css and add:
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-4. Start the Frontend Server
-
-Run the development server:
-
+### Development
+Run the development server with hot-module replacement:
+```bash
 npm run dev
+```
+The application will be available at `http://localhost:5173`.
 
-Or (if using Create React App):
+### Production Build
+Create an optimized production build:
+```bash
+npm run build
+```
+The output will be in the `dist/` folder.
 
-npm start
+---
 
-The frontend will be available at:
+##  Project Structure
 
-http://localhost:5173
+```text
+src/
+├── assets/             # Static assets (images, fonts)
+├── components/         # Reusable UI components
+├── contexts/           # React Context providers (Auth, etc.)
+├── hooks/              # Custom React hooks
+├── pages/              # Page components (Dashboard, Login, etc.)
+├── services/           # API service modules
+├── App.jsx             # Root component
+└── main.jsx            # Application entry point
+```
 
-(or http://localhost:3000 for CRA)
+---
 
-5. Frontend Tech Stack
+##  Styling Guidelines
 
-React
+We use **Tailwind CSS** for all styling. 
+- Custom configurations can be found in `tailwind.config.js`.
+- Component-specific styles should be handled via Tailwind classes directly in JSX.
+- Global styles and Tailwind directives are in `src/index.css`.
 
-Tailwind CSS
+---
+##  Linting
 
-React Router
-
-Axios
-
-Lucide React
-
-React Hook Form
-
-Notes
-
-Run npm install only once (unless dependencies change)
-
-Run npm run dev every time you start working
-
-Make sure the backend server is running for API requests
+To maintain code quality, we use ESLint:
+```bash
+npm run lint
+```
