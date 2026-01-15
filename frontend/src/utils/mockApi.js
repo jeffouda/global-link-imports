@@ -41,82 +41,7 @@ const saveShipmentsToStorage = (shipments) => {
   localStorage.setItem('shipments', JSON.stringify(shipments));
 };
 
-export const getShipments = async () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(getShipmentsFromStorage());
-    }, 100);
-  });
-};
-
-export const getShipmentByTrackingId = async (tracking) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const shipments = getShipmentsFromStorage();
-      const shipment = shipments.find(s => s.tracking === tracking);
-      resolve(shipment);
-    }, 100);
-  });
-};
-
-export const createShipment = async (shipmentData) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const shipments = getShipmentsFromStorage();
-      const newShipment = {
-        id: `GLI-2024-${Date.now()}`,
-        tracking: `GLI-${Date.now().toString().slice(-6)}`,
-        destination: shipmentData.destination,
-        payment: 'Unpaid',
-        status: 'Pending',
-        customer_id: shipmentData.userId,
-        driver_id: null,
-        created_at: new Date().toISOString(),
-        items: shipmentData.items,
-        route: `Nairobi → ${shipmentData.destination}`,
-        customer: shipmentData.customer || 'Customer',
-        estDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      };
-      shipments.push(newShipment);
-      saveShipmentsToStorage(shipments);
-      resolve(newShipment);
-    }, 500);
-  });
-};
-
-export const updateShipment = async (updatedData) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const shipments = getShipmentsFromStorage();
-      const index = shipments.findIndex(s => s.id === updatedData.id);
-      if (index !== -1) {
-        shipments[index] = { ...shipments[index], ...updatedData };
-        saveShipmentsToStorage(shipments);
-        resolve(shipments[index]);
-      } else {
-        reject(new Error('Shipment not found'));
-      }
-    }, 500);
-  });
-};
-
-export const deleteShipment = async (id) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const shipments = getShipmentsFromStorage();
-      const index = shipments.findIndex(s => s.id === id);
-      if (index !== -1) {
-        shipments.splice(index, 1);
-        saveShipmentsToStorage(shipments);
-        resolve({ message: 'Shipment deleted successfully' });
-      } else {
-        reject(new Error('Shipment not found'));
-      }
-    }, 500);
-  });
-};
-
-export const loginUser = async (credentials) => {
+export const loginUser = (credentials) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const user = DEFAULT_USERS.find(u => u.email === credentials.email && u.password === credentials.password);
@@ -130,5 +55,80 @@ export const loginUser = async (credentials) => {
         reject(new Error('Invalid email or password'));
       }
     }, 1000);
+  });
+};
+
+export const getShipments = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(getShipmentsFromStorage());
+    }, 100);
+  });
+};
+
+export const getShipmentByTrackingId = (id) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const shipments = getShipmentsFromStorage();
+      const shipment = shipments.find(s => s.tracking === id);
+      resolve(shipment);
+    }, 100);
+  });
+};
+
+export const createShipment = (data) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const shipments = getShipmentsFromStorage();
+      const newShipment = {
+        id: `GLI-2024-${Date.now()}`,
+        tracking: `GLI-${Date.now().toString().slice(-6)}`,
+        destination: data.destination,
+        payment: 'Unpaid',
+        status: 'Pending',
+        customer_id: data.userId,
+        driver_id: data.driverId || null,
+        created_at: new Date().toISOString(),
+        items: data.items,
+        route: `Nairobi → ${data.destination}`,
+        customer: data.customer || 'Customer',
+        estDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      };
+      shipments.push(newShipment);
+      saveShipmentsToStorage(shipments);
+      resolve(newShipment);
+    }, 500);
+  });
+};
+
+export const updateShipment = (data) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shipments = getShipmentsFromStorage();
+      const index = shipments.findIndex(s => s.id === data.id);
+      if (index !== -1) {
+        shipments[index] = { ...shipments[index], ...data };
+        saveShipmentsToStorage(shipments);
+        resolve(shipments[index]);
+      } else {
+        reject(new Error('Shipment not found'));
+      }
+    }, 500);
+  });
+};
+
+export const deleteShipment = (id) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shipments = getShipmentsFromStorage();
+      const index = shipments.findIndex(s => s.id === id);
+      if (index !== -1) {
+        shipments.splice(index, 1);
+        saveShipmentsToStorage(shipments);
+        resolve({ message: 'Shipment deleted successfully' });
+      } else {
+        reject(new Error('Shipment not found'));
+      }
+    }, 500);
   });
 };

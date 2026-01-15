@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ErrorMessage from "./ErrorMessage"; // displays error messages
 // import BASE_URL from "../utils/api";
-import { mockLogin } from "../utils/mockApi";
+import { loginUser } from "../utils/mockApi";
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function LoginForm() {
 
     try {
       // 1. Call the API
-      const data = await mockLogin(email, password);
+      const data = await loginUser({ email, password });
       // 2. Update Context
       login(data);
       // 3. Navigation
