@@ -1,7 +1,7 @@
 // LoginForm.jsx
 // Handles user login with email/password
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ErrorMessage from "./ErrorMessage"; // displays error messages
 import BASE_URL from "../utils/api";
 
@@ -65,6 +65,14 @@ export default function LoginForm() {
       <button className="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded">
         Login
       </button>
+
+      {/* Link to register */}
+      <p className="text-center mt-4">
+        Don't have an account?{" "}
+        <Link to="/register" className="text-blue-600 hover:underline">
+          Register here
+        </Link>
+      </p>
     </form>
   );
 }

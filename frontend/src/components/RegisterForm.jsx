@@ -1,7 +1,7 @@
 // RegisterForm.jsx
 // Handles user registration with name/email/password and role selection
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import BASE_URL from "../utils/api";
 
 
@@ -70,6 +70,14 @@ export default function RegisterForm() {
       <button className="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded">
         Create Account
       </button>
+
+      {/* Link to login */}
+      <p className="text-center mt-4">
+        Already have an account?{" "}
+        <Link to="/login" className="text-green-600 hover:underline">
+          Login here
+        </Link>
+      </p>
     </form>
   );
 }
