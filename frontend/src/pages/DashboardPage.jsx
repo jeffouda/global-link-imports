@@ -75,15 +75,18 @@ const DashboardPage = () => {
   const [shipments, setShipments] = useState([]);
   const [driverSearch, setDriverSearch] = useState('');
   const [editingShipment, setEditingShipment] = useState(null);
+  const [formData, setFormData] = useState({});
+
+  const MOCK_DRIVERS = [
+    { id: 2, name: 'John Doe (Driver)' },
+    { id: 4, name: 'Jane Smith (Driver)' },
+    { id: 5, name: 'Mike Ross (Driver)' }
+  ];
 
   useEffect(() => {
     getShipments().then(setShipments);
   }, []);
 
-  const mockDrivers = [
-    { id: 2, name: 'Driver User' },
-    { id: 5, name: 'John Doe' }
-  ];
 
   // Derived variables (filter logic)
   const customerShipments = shipments.filter(s => s.customer_id === user.id);
@@ -179,10 +182,10 @@ const DashboardPage = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const updates = { id: editingShipment.id, status: editingShipment.status };
+      const updates = { id: editingShipment.id, status: formData.status };
       if (user.role === 'admin') {
-        updates.payment = editingShipment.payment;
-        updates.driver_id = editingShipment.driver_id;
+        updates.payment = formData.payment;
+        updates.driver_id = formData.driver_id;
       }
       await updateShipment(updates);
       setShipments(shipments.map(s => s.id === editingShipment.id ? { ...s, ...updates } : s));
@@ -333,6 +336,7 @@ const DashboardPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Est. Delivery</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -366,6 +370,9 @@ const DashboardPage = () => {
                           {shipment.payment}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {shipment.driver_id ? MOCK_DRIVERS.find(d => d.id === shipment.driver_id)?.name || 'Unknown Driver' : <span className="text-red-500">Unassigned</span>}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.estDelivery}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {(user.role === 'admin' || user.role === 'driver') && (
@@ -392,12 +399,27 @@ const DashboardPage = () => {
       {editingShipment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Update Shipment #{editingShipment.id}</h2>
+            <h2 className="text-xl font-bold mb-4">Manage Shipment #{editingShipment.id}</h2>
+            {user.role === 'admin' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Assign Driver</label>
+                <select
+                  value={formData.driver_id || ''}
+                  onChange={(e) => setFormData({ ...formData, driver_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value="">Unassigned</option>
+                  {MOCK_DRIVERS.map(driver => (
+                    <option key={driver.id} value={driver.id}>{driver.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Shipment Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
               <select
-                value={editingShipment.status}
-                onChange={(e) => setEditingShipment({ ...editingShipment, status: e.target.value })}
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               >
                 <option value="Pending">Pending</option>
@@ -408,33 +430,18 @@ const DashboardPage = () => {
               </select>
             </div>
             {user.role === 'admin' && (
-              <>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
-                  <select
-                    value={editingShipment.payment}
-                    onChange={(e) => setEditingShipment({ ...editingShipment, payment: e.target.value })}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                  >
-                    <option value="Unpaid">Unpaid</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                  </select>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Assign Driver</label>
-                  <select
-                    value={editingShipment.driver_id || ''}
-                    onChange={(e) => setEditingShipment({ ...editingShipment, driver_id: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                  >
-                    <option value="">Unassigned</option>
-                    {mockDrivers.map(driver => (
-                      <option key={driver.id} value={driver.id}>{driver.name} (ID: {driver.id})</option>
-                    ))}
-                  </select>
-                </div>
-              </>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                <select
+                  value={formData.payment}
+                  onChange={(e) => setFormData({ ...formData, payment: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
             )}
             <div className="flex justify-end space-x-2">
               <button
