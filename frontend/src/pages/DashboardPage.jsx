@@ -90,7 +90,7 @@ const DashboardPage = () => {
 
   // Derived variables (filter logic)
   const customerShipments = shipments.filter(s => s.customer_id === user.id);
-  const driverShipmentsFiltered = shipments.filter(s => s.driver_id === user.id);
+  const driverShipmentsFiltered = shipments.filter(s => Number(s.driver_id) === Number(user.id));
   const driverShipments = driverShipmentsFiltered.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
@@ -103,6 +103,11 @@ const DashboardPage = () => {
   const activeOrders = customerShipments?.length || 0;
   const customerInTransit = customerShipments?.filter(s => s?.status === 'In Transit').length || 0;
   const customerDelivered = customerShipments?.filter(s => s?.status === 'Delivered').length || 0;
+
+  const loadShipments = async () => {
+    const data = await getShipments();
+    setShipments(data);
+  };
 
   const adminStats = [
     { icon: <Box className="w-6 h-6" />, value: 12, label: 'Total Shipments' },
@@ -182,13 +187,17 @@ const DashboardPage = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const updates = { id: editingShipment.id, status: formData.status };
+      const updates = {
+        id: editingShipment.id,
+        status: formData.status,
+        driver_id: formData.driver_id ? parseInt(formData.driver_id, 10) : null
+      };
       if (user.role === 'admin') {
         updates.payment = formData.payment;
-        updates.driver_id = formData.driver_id;
       }
+      console.log('Saving Shipment:', updates);
       await updateShipment(updates);
-      setShipments(shipments.map(s => s.id === editingShipment.id ? { ...s, ...updates } : s));
+      await loadShipments(); // Reload to ensure real-time updates
       setEditingShipment(null);
       alert('Changes saved successfully');
     } catch (err) {
