@@ -41,10 +41,20 @@ const saveShipmentsToStorage = (shipments) => {
   localStorage.setItem('shipments', JSON.stringify(shipments));
 };
 
+const getUsersFromStorage = () => {
+  const stored = localStorage.getItem('users');
+  return stored ? JSON.parse(stored) : DEFAULT_USERS;
+};
+
+const saveUsersToStorage = (users) => {
+  localStorage.setItem('users', JSON.stringify(users));
+};
+
 export const loginUser = (credentials) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      const user = DEFAULT_USERS.find(u => u.email === credentials.email && u.password === credentials.password);
+      const users = getUsersFromStorage();
+      const user = users.find(u => u.email === credentials.email && u.password === credentials.password);
       if (user) {
         resolve({
           access_token: "mock_jwt_access_token",
@@ -54,6 +64,32 @@ export const loginUser = (credentials) => {
       } else {
         reject(new Error('Invalid email or password'));
       }
+    }, 1000);
+  });
+};
+
+export const registerUser = (userData) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const users = getUsersFromStorage();
+      const existingUser = users.find(u => u.email === userData.email);
+      if (existingUser) {
+        reject(new Error('Email already registered'));
+        return;
+      }
+      const newUser = {
+        id: Date.now(),
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        role: userData.role || 'customer'
+      };
+      users.push(newUser);
+      saveUsersToStorage(users);
+      resolve({
+        message: "User registered successfully",
+        user: { id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role }
+      });
     }, 1000);
   });
 };

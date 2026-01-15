@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // import BASE_URL from "../utils/api";
-import { mockRegister } from "../utils/mockApi";
+import { registerUser } from "../utils/mockApi";
 import ErrorMessage from "./ErrorMessage";
 
 
@@ -23,7 +23,7 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      await mockRegister(form);
+      await registerUser({ ...form, username: form.name });
       alert("Account created! Please login");
       navigate("/login");
     } catch (err) {
