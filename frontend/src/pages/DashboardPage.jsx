@@ -93,13 +93,13 @@ const DashboardPage = () => {
   );
 
   // Stats calculations
-  const assignedDeliveries = driverShipmentsFiltered.length;
-  const pendingPickup = driverShipmentsFiltered.filter(s => s.status === 'Pending').length;
-  const completedToday = driverShipmentsFiltered.filter(s => s.status === 'Delivered').length;
+  const assignedDeliveries = driverShipmentsFiltered?.length || 0;
+  const pendingPickup = driverShipmentsFiltered?.filter(s => s?.status === 'Pending').length || 0;
+  const completedToday = driverShipmentsFiltered?.filter(s => s?.status === 'Delivered').length || 0;
 
-  const activeOrders = customerShipments.length;
-  const customerInTransit = customerShipments.filter(s => s.status === 'In Transit').length;
-  const customerDelivered = customerShipments.filter(s => s.status === 'Delivered').length;
+  const activeOrders = customerShipments?.length || 0;
+  const customerInTransit = customerShipments?.filter(s => s?.status === 'In Transit').length || 0;
+  const customerDelivered = customerShipments?.filter(s => s?.status === 'Delivered').length || 0;
 
   const adminStats = [
     { icon: <Box className="w-6 h-6" />, value: 12, label: 'Total Shipments' },
@@ -239,7 +239,8 @@ const DashboardPage = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {driverShipments.map((shipment) => {
-                    const [origin, destination] = shipment.route.split(' → ');
+                    const origin = shipment.origin || (shipment.route ? shipment.route.split(' → ')[0]?.trim() : 'Unknown');
+                    const destination = shipment.destination || (shipment.route ? shipment.route.split(' → ')[1]?.trim() : 'Unknown');
                     return (
                       <div key={shipment.id} className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition" onClick={() => setEditingShipment(shipment)}>
                         <div className="flex justify-between items-center mb-4">
@@ -277,7 +278,8 @@ const DashboardPage = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {customerShipments.map((shipment) => {
-                    const [origin, destination] = shipment.route.split(' → ');
+                    const origin = shipment.origin || (shipment.route ? shipment.route.split(' → ')[0]?.trim() : 'Unknown');
+                    const destination = shipment.destination || (shipment.route ? shipment.route.split(' → ')[1]?.trim() : 'Unknown');
                     return (
                       <div key={shipment.id} className="bg-white border border-gray-200 rounded-lg p-4">
                         <div className="flex justify-between items-start mb-4">
