@@ -1,13 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
-const Layout = ({ children }) => {
-  const userRole = localStorage.getItem("role") || "customer"; // default to customer
+const Layout = () => {
+  const userRole = localStorage.getItem("role") || "customer"; // default role
 
   const getNavLinks = () => {
     const links = [
       { to: "/dashboard", label: "Dashboard" },
-      { to: "#", label: "Logout", onClick: () => { localStorage.clear(); window.location.href = "/"; } }
+      {
+        to: "#",
+        label: "Logout",
+        onClick: () => {
+          localStorage.clear();
+          window.location.href = "/";
+        },
+      },
     ];
 
     if (userRole === "admin") {
@@ -26,19 +33,21 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen flex bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border shadow-sm">
+      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-primary">Global Link Imports</h1>
+          <h1 className="text-xl font-bold text-blue-600">
+            Global Link Imports
+          </h1>
         </div>
         <nav className="px-4 space-y-2">
-          {getNavLinks().map((link, index) => (
+          {getNavLinks().map((link, index) =>
             link.onClick ? (
               <button
                 key={index}
                 onClick={link.onClick}
-                className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
+                className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
               >
                 {link.label}
               </button>
@@ -46,27 +55,26 @@ const Layout = ({ children }) => {
               <Link
                 key={index}
                 to={link.to}
-                className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
+                className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
               >
                 {link.label}
               </Link>
             )
-          ))}
+          )}
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
         <main className="flex-1 p-8">
-          {children}
+          <Outlet />
         </main>
 
         {/* Footer */}
-        <footer className="bg-muted border-t border-border">
-          <div className="py-4 px-8">
-            <p className="text-center text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Global Link Imports. All rights reserved.
-            </p>
+        <footer className="bg-gray-100 border-t border-gray-200">
+          <div className="py-4 px-8 text-center text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} Global Link Imports. All rights
+            reserved.
           </div>
         </footer>
       </div>
