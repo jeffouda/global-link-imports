@@ -43,6 +43,7 @@ const CreateShipmentPage = () => {
     try {
       await createShipment({ destination, items: products, userId: user.id, customer: user.username });
       alert('Shipment Created!');
+      localStorage.setItem('refreshDashboard', Date.now().toString());
       navigate('/dashboard');
     } catch (err) {
       alert('Error creating shipment: ' + err.message);
