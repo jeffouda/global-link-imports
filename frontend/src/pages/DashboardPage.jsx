@@ -9,69 +9,6 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const dummyShipments = [
-    {
-      id: 1,
-      tracking: 'GLI-001',
-      customer: 'John Doe',
-      route: 'Nairobi → Mombasa',
-      items: 'Electronics',
-      status: 'In Transit',
-      payment: 'Paid',
-      estDelivery: '2023-01-15',
-      customer_id: 3,
-      driverId: 2
-    },
-    {
-      id: 2,
-      tracking: 'GLI-002',
-      customer: 'Jane Smith',
-      route: 'Kisumu → Nairobi',
-      items: 'Books',
-      status: 'Pending',
-      payment: 'Unpaid',
-      estDelivery: '2023-01-16',
-      customer_id: 3,
-      driver_id: null
-    },
-    {
-      id: 3,
-      tracking: 'GLI-003',
-      customer: 'Bob Johnson',
-      route: 'Eldoret → Nakuru',
-      items: 'Clothing',
-      status: 'Delivered',
-      payment: 'Paid',
-      estDelivery: '2023-01-10',
-      userId: 3,
-      driverId: 2
-    },
-    {
-      id: 4,
-      tracking: 'GLI-004',
-      customer: 'Alice Brown',
-      route: 'Nairobi → Kisumu',
-      items: 'Furniture',
-      status: 'In Transit',
-      payment: 'Paid',
-      estDelivery: '2023-01-17',
-      userId: 3,
-      driverId: null
-    },
-    {
-      id: 5,
-      tracking: 'GLI-005',
-      customer: 'Charlie Wilson',
-      route: 'Mombasa → Nairobi',
-      items: 'Groceries',
-      status: 'Pending',
-      payment: 'Unpaid',
-      estDelivery: '2023-01-18',
-      userId: 3,
-      driverId: null
-    }
-  ];
-
   const [shipments, setShipments] = useState([]);
   const [driverSearch, setDriverSearch] = useState('');
   const [editingShipment, setEditingShipment] = useState(null);
@@ -83,49 +20,60 @@ const DashboardPage = () => {
   ];
 
   useEffect(() => {
-    getShipments().then(setShipments);
+    loadShipments();
+
+    const handleFocus = () => loadShipments();
+    window.addEventListener('focus', handleFocus);
+
+    // Check for refresh flag from create page
+    const refreshFlag = localStorage.getItem('refreshDashboard');
+    if (refreshFlag) {
+      localStorage.removeItem('refreshDashboard');
+      loadShipments();
+    }
+
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-
-  // Derived variables (filter logic)
-  const customerShipments = shipments.filter(s => s.userId === user.id);
-  const driverShipmentsFiltered = shipments.filter(s => Number(s.driverId) === Number(user.id));
-  const driverShipments = driverShipmentsFiltered.filter(shipment =>
+  // Variable Separation
+  // 1. For Admin: SEES EVERYTHING
+  const allShipments = shipments;
+  // 2. For Customer: SEES ONLY THEIR OWN
+  const myShipments = shipments.filter(s => s.userId === user.id);
+  // 3. For Driver: SEES ONLY ASSIGNED
+  const driverAssignments = shipments.filter(s => Number(s.driverId) === Number(user.id));
+  const driverShipments = driverAssignments.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
 
-  // Stats calculations
-  const assignedDeliveries = driverShipmentsFiltered?.length || 0;
-  const pendingPickup = driverShipmentsFiltered?.filter(s => s?.status === 'Pending').length || 0;
-  const completedToday = driverShipmentsFiltered?.filter(s => s?.status === 'Delivered').length || 0;
-
-  const activeOrders = customerShipments?.length || 0;
-  const customerInTransit = customerShipments?.filter(s => s?.status === 'In Transit').length || 0;
-  const customerDelivered = customerShipments?.filter(s => s?.status === 'Delivered').length || 0;
+  // Stats calculations based on role
+  const getStats = () => {
+    if (user.role === 'admin') {
+      return [
+        { icon: <Box className="w-6 h-6" />, value: allShipments.length, label: 'Total Shipments' },
+        { icon: <Clock className="w-6 h-6" />, value: allShipments.filter(s => s.status === 'Pending').length, label: 'Pending', color: 'text-orange-600' },
+        { icon: <Truck className="w-6 h-6" />, value: allShipments.filter(s => s.status === 'In Transit').length, label: 'In Transit', color: 'text-blue-600' },
+        { icon: <DollarSign className="w-6 h-6" />, value: allShipments.filter(s => s.payment === 'Unpaid').length, label: 'Payment Pending', color: 'text-red-600' }
+      ];
+    } else if (user.role === 'driver') {
+      return [
+        { icon: <Truck className="w-6 h-6" />, value: driverShipments.length, label: 'Assigned Deliveries', color: 'text-blue-600' },
+        { icon: <Clock className="w-6 h-6" />, value: driverShipments.filter(s => s.status === 'Pending').length, label: 'Pending Pickup', color: 'text-orange-600' },
+        { icon: <CheckCircle className="w-6 h-6" />, value: driverShipments.filter(s => s.status === 'Delivered').length, label: 'Completed Today', color: 'text-green-600' }
+      ];
+    } else { // customer
+      return [
+        { icon: <Box className="w-6 h-6" />, value: myShipments.length, label: 'Active Orders', color: 'text-blue-600' },
+        { icon: <Truck className="w-6 h-6" />, value: myShipments.filter(s => s.status === 'In Transit').length, label: 'In Transit', color: 'text-blue-600' },
+        { icon: <CheckCircle className="w-6 h-6" />, value: myShipments.filter(s => s.status === 'Delivered').length, label: 'Delivered', color: 'text-green-600' }
+      ];
+    }
+  };
 
   const loadShipments = async () => {
     const data = await getShipments();
     setShipments(data);
   };
-
-  const adminStats = [
-    { icon: <Box className="w-6 h-6" />, value: shipments.length, label: 'Total Shipments' },
-    { icon: <Clock className="w-6 h-6" />, value: shipments.filter(s => s.status === 'Pending').length, label: 'Pending', color: 'text-orange-600' },
-    { icon: <Truck className="w-6 h-6" />, value: shipments.filter(s => s.status === 'In Transit').length, label: 'In Transit', color: 'text-blue-600' },
-    { icon: <DollarSign className="w-6 h-6" />, value: shipments.filter(s => s.payment === 'Unpaid').length, label: 'Payment Pending', color: 'text-red-600' }
-  ];
-
-  const driverStats = [
-    { icon: <Truck className="w-6 h-6" />, value: assignedDeliveries, label: 'Assigned Deliveries', color: 'text-blue-600' },
-    { icon: <Clock className="w-6 h-6" />, value: pendingPickup, label: 'Pending Pickup', color: 'text-orange-600' },
-    { icon: <CheckCircle className="w-6 h-6" />, value: completedToday, label: 'Completed Today', color: 'text-green-600' }
-  ];
-
-  const customerStats = [
-    { icon: <Box className="w-6 h-6" />, value: activeOrders, label: 'Active Orders', color: 'text-blue-600' },
-    { icon: <Truck className="w-6 h-6" />, value: customerInTransit, label: 'In Transit', color: 'text-blue-600' },
-    { icon: <CheckCircle className="w-6 h-6" />, value: customerDelivered, label: 'Delivered', color: 'text-green-600' }
-  ];
 
   const getStatusBadge = (status) => {
     const styles = {
@@ -161,17 +109,10 @@ const DashboardPage = () => {
   const canUpdateStatus = ['admin', 'driver'].includes(user?.role);
 
   const renderItems = (items) => {
-    if (!items) return 'No items';
-    if (typeof items === 'string') return items;
     if (Array.isArray(items)) {
-      return items.map(item => {
-        if (typeof item === 'object') {
-          return `${item.product || item.product_id || 'Item'} (x${item.quantity})`;
-        }
-        return item;
-      }).join(', ');
+      return items.map(i => typeof i === 'object' ? `${i.product} (x${i.quantity})` : i).join(', ');
     }
-    return 'Unknown Format';
+    return items || 'No items';
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -195,15 +136,17 @@ const DashboardPage = () => {
       if (user.role === 'admin') {
         updates.payment = formData.payment;
       }
-      console.log('Saving Shipment:', updates);
       await updateShipment(updates);
-      await loadShipments(); // Reload to ensure real-time updates
+      await loadShipments(); // Refresh to ensure real-time updates
       setEditingShipment(null);
       alert('Changes saved successfully');
     } catch (err) {
       alert(err.message);
     }
   };
+
+  // Debugging Aid
+  console.log('Role:', user.role, 'Total Shipments:', allShipments.length);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -213,7 +156,7 @@ const DashboardPage = () => {
       <main className="container mx-auto p-6">
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {(user.role === 'driver' ? driverStats : user.role === 'customer' ? customerStats : adminStats).map((stat, index) => (
+          {getStats().map((stat, index) => (
             <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
               <div className="flex items-center">
                 <div className={`mr-4 ${stat.color || 'text-gray-600'}`}>
@@ -243,7 +186,63 @@ const DashboardPage = () => {
               )}
             </div>
           </div>
-          {user.role === 'driver' ? (
+          {user.role === 'admin' ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {allShipments.map((shipment) => (
+                    <tr key={shipment.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{shipment.tracking}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.customer}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{renderItems(shipment.items)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.origin ? `${shipment.origin} → ${shipment.destination}` : shipment.route}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {canUpdateStatus ? (
+                          <select
+                            value={shipment.status}
+                            onChange={(e) => handleStatusChange(shipment.id, e.target.value)}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
+                          </select>
+                        ) : (
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(shipment.status)}`}>
+                            {shipment.status}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {shipment.driverId ? MOCK_DRIVERS.find(d => d.id === shipment.driverId)?.name || 'Unknown Driver' : <span className="text-red-500">Unassigned</span>}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onClick={() => setEditingShipment(shipment)} className="text-blue-500 hover:text-blue-700 p-2 rounded mr-2">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        {user.role === 'admin' && (
+                          <button onClick={() => handleDelete(shipment.id)} className="text-red-500 hover:text-red-700 p-2 rounded">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : user.role === 'driver' ? (
             <div className="p-6">
               <div className="mb-6 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -292,9 +291,9 @@ const DashboardPage = () => {
                 </div>
               )}
             </div>
-          ) : user.role === 'customer' ? (
+          ) : (
             <div className="p-6">
-              {customerShipments.length === 0 ? (
+              {myShipments.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 mb-4">You have no active shipments</p>
                   <button onClick={() => navigate('/create-shipment')} className="bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
@@ -303,7 +302,7 @@ const DashboardPage = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {customerShipments.map((shipment) => {
+                  {myShipments.map((shipment) => {
                     const origin = shipment.origin || (shipment.route ? shipment.route.split(' → ')[0]?.trim() : 'Unknown');
                     const destination = shipment.destination || (shipment.route ? shipment.route.split(' → ')[1]?.trim() : 'Unknown');
                     return (
@@ -333,72 +332,6 @@ const DashboardPage = () => {
                   })}
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking #</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Est. Delivery</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {shipments.map((shipment) => (
-                    <tr key={shipment.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{shipment.tracking}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.customer}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.origin ? `${shipment.origin} → ${shipment.destination}` : shipment.route}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{renderItems(shipment.items)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {canUpdateStatus ? (
-                          <select
-                            value={shipment.status}
-                            onChange={(e) => handleStatusChange(shipment.id, e.target.value)}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="In Transit">In Transit</option>
-                            <option value="Delivered">Delivered</option>
-                          </select>
-                        ) : (
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(shipment.status)}`}>
-                            {shipment.status}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentBadge(shipment.payment)}`}>
-                          {shipment.payment}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {shipment.driverId ? MOCK_DRIVERS.find(d => d.id === shipment.driverId)?.name || 'Unknown Driver' : <span className="text-red-500">Unassigned</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.estDelivery}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {(user.role === 'admin' || user.role === 'driver') && (
-                          <button onClick={() => setEditingShipment(shipment)} className="text-blue-500 hover:text-blue-700 p-2 rounded mr-2">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        )}
-                        {user.role === 'admin' && (
-                          <button onClick={() => handleDelete(shipment.id)} className="text-red-500 hover:text-red-700 p-2 rounded">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
         </div>
