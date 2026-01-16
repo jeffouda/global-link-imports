@@ -1,8 +1,14 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
@@ -23,59 +29,34 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
-        {/* Other routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/inventory"
-          element={
-            <Layout>
-              <InventoryPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/create-shipment"
-          element={
-            <ProtectedRoute>
-              <CreateShipmentPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/shipments"
-          element={
-            <Layout>
-              <ShipmentListPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/shipments/:id"
-          element={
-            <Layout>
-              <ShipmentDetailsPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/tracking"
-          element={
-            <ProtectedRoute>
-              <TrackOrderPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Error pages */}
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+        {/* Protected layout routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          {/* Dashboard only for admin */}
+          <Route path="/dashboard" element={<DashboardPage />} />
+
+          {/* Inventory accessible for any authenticated user */}
+          <Route path="/inventory" element={<InventoryPage />} />
+
+          {/* Create shipment only for customers */}
+          <Route path="/create-shipment" element={<CreateShipmentPage />} />
+
+          {/* Shipments listing */}
+          <Route path="/shipments" element={<ShipmentListPage />} />
+          <Route path="/shipments/:id" element={<ShipmentDetailsPage />} />
+
+          {/* Tracking orders */}
+          <Route path="/tracking" element={<TrackOrderPage />} />
+        </Route>
+
+        {/* Catch-all for 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
