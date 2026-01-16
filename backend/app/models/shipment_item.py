@@ -7,6 +7,16 @@ class ShipmentItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
+<<<<<<< HEAD
+    shipment_id = db.Column(db.Integer, db.ForeignKey("shipments.id"), nullable=False)
+
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+
+    # Relationships
+    product = db.relationship("Product", backref="shipment_items")
+=======
     shipment_id = db.Column(
         db.Integer,
         db.ForeignKey("shipments.id"),
@@ -27,3 +37,4 @@ class ShipmentItem(db.Model):
             "quantity": self.quantity,
             "weight": self.weight
         }
+>>>>>>> main

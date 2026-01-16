@@ -16,13 +16,11 @@ const ShipmentCard = ({ shipment }) => {
       <div className="space-y-2 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4" />
-          <span>
-            {shipment.origin} → {shipment.destination}
-          </span>
+          <span>Destination: {shipment.destination}</span>
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
-          <span>ETA: {shipment.eta}</span>
+          <span>Created: {new Date(shipment.created_at).toLocaleDateString()}</span>
         </div>
       </div>
     </div>

@@ -1,7 +1,5 @@
 # Global Link Imports
 
-# Global Link Imports
-
 A comprehensive logistics and shipment management platform designed to streamline global import operations. This project features a robust Flask-based backend and a modern React frontend.
 
 ## Overview
@@ -116,12 +114,18 @@ License
 MIT
 
 
-### Final Step: Save and Commit
-Once you have replaced the content:
-1.  **Save** the file.
-2.  Run these commands in your terminal:
-    ```bash
-    git add README.md
-    git commit -m "Resolved merge conflict: merged main overview with alvin frontend instructions"
-    git push
-    ```
+---
+
+#### **2. Mark the Conflict as Resolved**
+
+After you save the file above, run these commands in your terminal to finalize the merge:
+
+```bash
+# 1. Add the resolved file
+git add README.md
+
+# 2. Commit the merge
+git commit -m "Resolved merge conflict in README: kept detailed documentation from main"
+
+# 3. Push the changes (if you are ready to push)
+git push
