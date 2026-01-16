@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-<<<<<<< HEAD
 from flask_jwt_extended import get_jwt_identity
 from app import db
 from app.models.shipment import Shipment
@@ -13,74 +12,89 @@ from app.schemas import (
 from app.utils.decorators import login_required, admin_required, driver_required
 from datetime import datetime
 import uuid
-=======
-from app import db
-from app.models.shipment import Shipment
->>>>>>> main
+from sqlalchemy.orm import joinedload
 
 shipment_bp = Blueprint("shipment", __name__)
 
-<<<<<<< HEAD
+#
+
 
 @shipment_bp.route("/shipments", methods=["GET"])
 @login_required
 def get_shipments():
+    """
+    Get all shipments based on user role.
+    - Admin: Sees ALL
+    - Driver: Sees ALL (to find assignments)
+    - Customer: Sees ONLY their own
+    """
     current_user = get_jwt_identity()
     user_id = current_user["id"]
     role = current_user["role"]
 
-    if role == "admin":
-        shipments = Shipment.query.all()
-    elif role == "driver":
-        # Drivers can see all shipments to update status
-        shipments = Shipment.query.all()
+    if role in ["admin", "driver"]:
+        shipments = Shipment.query.options(
+            joinedload(Shipment.shipment_items).joinedload(ShipmentItem.product)
+        ).all()
     else:
-        # Customers see only their own
-        shipments = Shipment.query.filter_by(user_id=user_id).all()
+        shipments = (
+            Shipment.query
+            .filter_by(customer_id=user_id)
+            .options(
+                joinedload(Shipment.shipment_items).joinedload(ShipmentItem.product)
+            )
+            .all()
+        )
 
-    return jsonify(shipments_schema.dump(shipments)), 200
+    try:
+        data = shipments_schema.dump(shipments)
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 422
 
 
 @shipment_bp.route("/shipments", methods=["POST"])
 @login_required
 def create_shipment():
+    """
+    Creates a new shipment AND links products to it (if provided).
+    Uses a database transaction to ensure data integrity.
+    """
     try:
         current_user = get_jwt_identity()
         user_id = current_user["id"]
 
-        # Validate input data
+        # Validate input data using Marshmallow
         data = shipment_create_schema.load(request.get_json())
 
         # 1. Create the Shipment record
-        tracking_number = str(uuid.uuid4())[
-            :8
-        ].upper()  # Generate unique tracking number
+        tracking_number = str(uuid.uuid4())[:8].upper()
+
         new_shipment = Shipment(
             tracking_number=tracking_number,
-            origin=data.get("origin", "Nairobi"),  # Default origin
+            origin=data.get("origin", "Nairobi"),
             destination=data.get("destination"),
             status="Pending",
             payment_status="Unpaid",
-            user_id=user_id,
-            driver_id=data.get("driver_id"),
+            customer_id=user_id,
+            driver_id=data.get("driver_id"),  # Optional: Admin might assign later
             created_at=datetime.utcnow(),
         )
 
-        # Add to session to get the ID
         db.session.add(new_shipment)
-        db.session.flush()
+        db.session.flush()  # Flush to generate the new_shipment.id
 
-        # 2. Loop through items and add to the Join Table (ShipmentItem)
+        # 2. Handle Shipment Items (The products inside the box)
         if "items" in data:
             for item in data["items"]:
                 link = ShipmentItem(
                     shipment_id=new_shipment.id,
                     product_id=item["product_id"],
-                    quantity=item["quantity"],  # <-- The User Submittable Attribute
+                    quantity=item["quantity"],
                 )
                 db.session.add(link)
 
-        # 3. Commit everything at once (Transaction)
+        # 3. Commit everything
         db.session.commit()
         return jsonify(shipment_schema.dump(new_shipment)), 201
 
@@ -92,30 +106,53 @@ def create_shipment():
 @shipment_bp.route("/shipments/<int:shipment_id>", methods=["GET"])
 @login_required
 def get_shipment(shipment_id):
+    """
+    Get a single shipment.
+    Security: Ensures users can't spy on other people's shipments.
+    """
     current_user = get_jwt_identity()
     user_id = current_user["id"]
     role = current_user["role"]
 
-    shipment = Shipment.query.get_or_404(shipment_id)
+    shipment = Shipment.query.options(
+        joinedload(Shipment.shipment_items).joinedload(ShipmentItem.product)
+    ).get_or_404(shipment_id)
 
-    if role not in ["admin", "driver"] and shipment.user_id != user_id:
+    # Security Check
+    if role not in ["admin", "driver"] and shipment.customer_id != user_id:
         return jsonify({"error": "Access denied"}), 403
 
     return jsonify(shipment_schema.dump(shipment)), 200
 
 
-@shipment_bp.route("/shipments/<int:shipment_id>/status", methods=["PUT"])
-@driver_required
-def update_shipment_status(shipment_id):
+@shipment_bp.route("/shipments/<int:shipment_id>", methods=["PATCH"])
+@login_required
+def update_shipment(shipment_id):
+    """
+    Universal Update Route.
+    - Drivers can update Status.
+    - Admins can update Driver Assignment.
+    """
+    current_user = get_jwt_identity()
+    role = current_user["role"]
+
+    shipment = Shipment.query.get_or_404(shipment_id)
+    data = request.get_json()
+
     try:
-        shipment = Shipment.query.get_or_404(shipment_id)
+        # Admin Logic: Can assign drivers
+        if role == "admin":
+            if "driver_id" in data:
+                shipment.driver_id = data["driver_id"]
+            if "status" in data:
+                shipment.status = data["status"]
 
-        # Validate input data
-        data = shipment_status_schema.load(request.get_json())
+        # Driver Logic: Can only update status
+        if role == "driver":
+            if "status" in data:
+                shipment.status = data["status"]
 
-        shipment.status = data["status"]
         db.session.commit()
-
         return jsonify(shipment_schema.dump(shipment)), 200
 
     except Exception as e:
@@ -130,78 +167,3 @@ def delete_shipment(shipment_id):
     db.session.delete(shipment)
     db.session.commit()
     return jsonify({"message": "Shipment deleted"}), 200
-=======
-# 1. GET ALL - Retrieve all shipments
-@shipment_bp.route("", methods=["GET"])
-def get_shipments():
-    shipments = Shipment.query.all()
-    # Using the model's to_dict() method for serialization
-    return jsonify([s.to_dict() for s in shipments]), 200
-
-# 2. POST - Create a new shipment
-@shipment_bp.route("", methods=["POST"])
-def create_shipment():
-    data = request.get_json()
-
-    # Basic validation for required fields
-    if not data or "destination" not in data or "customer_id" not in data:
-        return jsonify({"error": "Missing required fields (destination, customer_id)"}), 400
-
-    new_shipment = Shipment(
-        destination=data.get("destination"),
-        customer_id=data.get("customer_id"),
-        driver_id=data.get("driver_id"), # Optional
-        status=data.get("status", "Pending"),
-        payment_status=data.get("payment_status", "Unpaid")
-    )
-
-    db.session.add(new_shipment)
-    db.session.commit()
-
-    return jsonify(new_shipment.to_dict()), 201
-
-# 3. GET ONE - Retrieve a specific shipment by ID
-@shipment_bp.route("/<int:shipment_id>", methods=["GET"])
-def get_shipment(shipment_id):
-    shipment = Shipment.query.get(shipment_id)
-    if not shipment:
-        return jsonify({"error": "Shipment not found"}), 404
-    
-    return jsonify(shipment.to_dict()), 200
-
-# 4. PATCH - Update an existing shipment
-@shipment_bp.route("/<int:shipment_id>", methods=["PATCH"])
-def update_shipment(shipment_id):
-    shipment = Shipment.query.get(shipment_id)
-    if not shipment:
-        return jsonify({"error": "Shipment not found"}), 404
-
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No update data provided"}), 400
-
-    # Conditionally update fields if they are present in the request
-    if "destination" in data:
-        shipment.destination = data["destination"]
-    if "status" in data:
-        shipment.status = data["status"]
-    if "payment_status" in data:
-        shipment.payment_status = data["payment_status"]
-    if "driver_id" in data:
-        shipment.driver_id = data["driver_id"]
-
-    db.session.commit()
-    return jsonify(shipment.to_dict()), 200
-
-# 5. DELETE - Remove a shipment
-@shipment_bp.route("/<int:shipment_id>", methods=["DELETE"])
-def delete_shipment(shipment_id):
-    shipment = Shipment.query.get(shipment_id)
-    if not shipment:
-        return jsonify({"error": "Shipment not found"}), 404
-
-    db.session.delete(shipment)
-    db.session.commit()
-
-    return jsonify({"message": f"Shipment {shipment_id} deleted successfully"}), 200
->>>>>>> main

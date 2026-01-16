@@ -11,5 +11,5 @@ class Config:
 
     # JWT Configuration
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "jwt-secret-string"
-    JWT_ACCESS_TOKEN_EXPIRES = 900  # 15 minutes
+    JWT_ACCESS_TOKEN_EXPIRES = 3600  # 1 hour
     JWT_REFRESH_TOKEN_EXPIRES = 604800  # 7 days

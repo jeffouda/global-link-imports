@@ -41,7 +41,7 @@ class UserRegisterSchema(ma.Schema):
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=lambda x: len(x) >= 6)
     role = fields.Str(
-        missing="customer", validate=lambda x: x in ["customer", "driver", "admin"]
+        load_default="customer", validate=lambda x: x in ["customer", "driver", "admin"]
     )
 
     @validates("email")
@@ -57,16 +57,11 @@ class ProductSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
 
-class ShipmentItemSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = ShipmentItem
-        sqla_session = db.session
-        load_instance = True
-        include_fk = True
-
-    # Avoid recursion by not including the full shipment
-    shipment = fields.Nested(lambda: ShipmentSchema(exclude=("items",)), dump_only=True)
-    product = fields.Nested(ProductSchema, dump_only=True)
+class ShipmentItemSchema(ma.Schema):
+    id = fields.Int()
+    shipment_id = fields.Int()
+    product_id = fields.Int()
+    quantity = fields.Int()
 
 
 class ShipmentSchema(SQLAlchemyAutoSchema):
@@ -78,9 +73,12 @@ class ShipmentSchema(SQLAlchemyAutoSchema):
 
     # Include nested items
     items = fields.Nested(ShipmentItemSchema, many=True, exclude=("shipment",))
+    # Ensure customer_id is included
+    customer_id = auto_field()
 
 
 class ShipmentCreateSchema(ma.Schema):
+    tracking_number = fields.Str(required=False)  # Will be generated if not provided
     origin = fields.Str(required=True)
     destination = fields.Str(required=True)
     driver_id = fields.Int(required=False, allow_none=True)

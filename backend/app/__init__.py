@@ -1,18 +1,7 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from flask_migrate import Migrate
-from flask_marshmallow import Marshmallow
 from app.config import Config
-
-# Initialize Extensions (Global scope)
-db = SQLAlchemy()
-bcrypt = Bcrypt()
-jwt = JWTManager()
-migrate = Migrate()
-ma = Marshmallow()
+from app.extensions import db, bcrypt, jwt, migrate, ma
 
 
 def create_app(config_class=Config):
@@ -26,8 +15,8 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     ma.init_app(app)
 
-    # Enable CORS (Allow Frontend running on localhost:3000 to talk to backend)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Enable CORS (Allow Frontend running on localhost:5173 to talk to backend)
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
     # Import models to ensure they are registered with SQLAlchemy
     from app import models
