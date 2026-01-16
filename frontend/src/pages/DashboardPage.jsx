@@ -2,17 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Clock, Truck, DollarSign, Plus, Trash2, Pencil, ArrowRight, CheckCircle, Search, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
-import { deleteShipment, updateShipment, getShipments } from '../utils/mockApi';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const API_BASE = 'http://localhost:5000/api';
+
   const [shipments, setShipments] = useState([]);
   const [driverSearch, setDriverSearch] = useState('');
   const [editingShipment, setEditingShipment] = useState(null);
   const [formData, setFormData] = useState({});
+  const [error, setError] = useState('');
+
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
+  // Helper function to map backend shipment to frontend format
+  const mapShipment = (s) => ({
+    id: s.id,
+    tracking: s.tracking_number,
+    status: s.status,
+    origin: s.origin,
+    destination: s.destination,
+    payment: s.payment_status,
+    customerId: s.customer_id,
+    driverId: s.driver_id,
+    createdAt: s.created_at,
+    items: s.items ? s.items.map(i => ({ product: 'Product ' + i.product_id, quantity: i.quantity })) : []
+  });
 
   const MOCK_DRIVERS = [
     { id: 2, name: 'Driver User', email: 'driver@global.com' },
@@ -35,13 +61,22 @@ const DashboardPage = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
+  // Add this to fix the Edit Form!
+  useEffect(() => {
+    if (editingShipment) {
+      setFormData({
+        status: editingShipment.status,
+        driverId: editingShipment.driverId,
+        payment: editingShipment.payment
+      });
+    }
+  }, [editingShipment]);
+
   // Variable Separation
-  // 1. For Admin: SEES EVERYTHING
+  // Backend already filters based on role, so shipments is appropriate for each user
   const allShipments = shipments;
-  // 2. For Customer: SEES ONLY THEIR OWN
-  const myShipments = shipments.filter(s => s.userId === user.id);
-  // 3. For Driver: SEES ONLY ASSIGNED
-  const driverAssignments = shipments.filter(s => Number(s.driverId) === Number(user.id));
+  const myShipments = shipments; // Already filtered by backend for customers
+  const driverAssignments = shipments; // Already filtered by backend for drivers
   const driverShipments = driverAssignments.filter(shipment =>
     shipment.tracking.toLowerCase().includes(driverSearch.toLowerCase())
   );
@@ -71,8 +106,23 @@ const DashboardPage = () => {
   };
 
   const loadShipments = async () => {
-    const data = await getShipments();
-    setShipments(data);
+    try {
+      const response = await fetch(`${API_BASE}/shipments`, {
+        headers: getAuthHeaders()
+      });
+      if (response.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Failed to fetch shipments');
+      }
+      const data = await response.json();
+      setShipments(data.map(mapShipment));
+    } catch (error) {
+      console.error('Error loading shipments:', error);
+      setError('Failed to load shipments');
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -98,10 +148,21 @@ const DashboardPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        await deleteShipment(id);
-        setShipments(shipments.filter(s => s.id !== id));
+        const response = await fetch(`${API_BASE}/shipments/${id}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        if (response.status === 401) {
+          navigate('/login');
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to delete shipment');
+        }
+        await loadShipments(); // Refresh data
+        setError('');
       } catch (err) {
-        alert(err.message);
+        setError(err.message);
       }
     }
   };
@@ -117,11 +178,22 @@ const DashboardPage = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await updateShipment({ id, status: newStatus });
-      setShipments(shipments.map(s => s.id === id ? { ...s, status: newStatus } : s));
-      alert(`Status updated to ${newStatus}`);
+      const response = await fetch(`${API_BASE}/shipments/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+      await loadShipments(); // Refresh data
+      setError('');
     } catch (err) {
-      alert(err.message);
+      setError(err.message);
     }
   };
 
@@ -129,19 +201,29 @@ const DashboardPage = () => {
     try {
       const cleanDriverId = formData.driverId ? parseInt(formData.driverId, 10) : null;
       const updates = {
-        id: editingShipment.id,
         status: formData.status,
-        driverId: cleanDriverId
+        driver_id: cleanDriverId
       };
       if (user.role === 'admin') {
-        updates.payment = formData.payment;
+        updates.payment_status = formData.payment;
       }
-      await updateShipment(updates);
+      const response = await fetch(`${API_BASE}/shipments/${editingShipment.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updates)
+      });
+      if (response.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Failed to update shipment');
+      }
       await loadShipments(); // Refresh to ensure real-time updates
       setEditingShipment(null);
-      alert('Changes saved successfully');
+      setError('');
     } catch (err) {
-      alert(err.message);
+      setError(err.message);
     }
   };
 
@@ -151,6 +233,7 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+      <ErrorMessage message={error} />
 
       {/* Main Content */}
       <main className="container mx-auto p-6">
@@ -204,7 +287,7 @@ const DashboardPage = () => {
                   {allShipments.map((shipment) => (
                     <tr key={shipment.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{shipment.tracking}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.customer}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.customerId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{renderItems(shipment.items)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shipment.origin ? `${shipment.origin} → ${shipment.destination}` : shipment.route}</td>
                       <td className="px-6 py-4 whitespace-nowrap">

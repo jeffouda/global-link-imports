@@ -2,8 +2,6 @@
 // Handles user registration with name/email/password and role selection
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// import BASE_URL from "../utils/api";
-import { registerUser } from "../utils/mockApi";
 import ErrorMessage from "./ErrorMessage";
 
 
@@ -23,21 +21,22 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      await registerUser({ ...form, username: form.name });
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ...form, username: form.name })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
       alert("Account created! Please login");
       navigate("/login");
     } catch (err) {
       setError(err.message);
     }
-
-    // Comment out the real API call
-    // await fetch(`${BASE_URL}/register`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(form),
-    // });
-
-    // navigate("/login"); // redirect to login
   };
 
   return (

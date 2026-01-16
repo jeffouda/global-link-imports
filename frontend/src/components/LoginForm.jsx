@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ErrorMessage from "./ErrorMessage"; // displays error messages
-// import BASE_URL from "../utils/api";
-import { loginUser } from "../utils/mockApi";
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -28,9 +26,24 @@ export default function LoginForm() {
 
     try {
       // 1. Call the API
-      const data = await loginUser({ email, password });
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+      const data = await response.json();
+      // Map to expected format
+      const loginData = {
+        token: data.access_token,
+        user: data.user
+      };
       // 2. Update Context
-      login(data);
+      login(loginData);
       // 3. Navigation
       console.log('Login success, navigating...');
       navigate("/dashboard", { replace: true });
