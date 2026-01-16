@@ -1,77 +1,82 @@
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
-import NewShipmentPage from "./pages/NewShipmentPage";
-import TrackingPage from "./pages/TrackingPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import InventoryPage from "./pages/InventoryPage";
+import CreateShipmentPage from "./pages/CreateShipmentPage";
+import ShipmentListPage from "./pages/ShipmentListPage";
+import ShipmentDetailsPage from "./pages/ShipmentDetailsPage";
+import TrackOrderPage from "./pages/TrackOrderPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
-  const [userRole, setUserRole] = useState("customer"); // default role
-
   return (
     <Router>
-      <div style={{ padding: "1rem", backgroundColor: "#f0f0f0" }}>
-        {/* Quick role switcher for testing */}
-        <label>
-          Select Role:{" "}
-          <select
-            value={userRole}
-            onChange={(e) => setUserRole(e.target.value)}
-          >
-            <option value="admin">Admin</option>
-            <option value="customer">Customer</option>
-            <option value="driver">Driver</option>
-          </select>
-        </label>
-      </div>
-
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Homepage />} />
+        {/* Public routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-          <Route
-            path="dashboard"
-            element={
-              userRole === "admin" ? (
-                <DashboardPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
-            }
-          />
+        {/* Other routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            <Layout>
+              <InventoryPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/create-shipment"
+          element={
+            <ProtectedRoute>
+              <CreateShipmentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shipments"
+          element={
+            <Layout>
+              <ShipmentListPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/shipments/:id"
+          element={
+            <Layout>
+              <ShipmentDetailsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/tracking"
+          element={
+            <ProtectedRoute>
+              <TrackOrderPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="new-shipment"
-            element={
-              userRole === "customer" ? (
-                <NewShipmentPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
-            }
-          />
-
-          <Route
-            path="tracking"
-            element={
-              userRole === "customer" || userRole === "driver" ? (
-                <TrackingPage />
-              ) : (
-                <Navigate to="/unauthorized" />
-              )
-            }
-          />
-
-          <Route path="unauthorized" element={<UnauthorizedPage />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Route>
+        {/* Error pages */}
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
