@@ -4,9 +4,9 @@ export default function HomePage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="w-screen relative left-[calc(-50vw+50%)] min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col justify-start items-center pt-32">
-        <div className="px-6">
-          <div className="inline-block bg-white bg-opacity-10 border border-white border-opacity-20 rounded-full px-4 py-2 mb-8">
+      <section className="min-h-fit pt-28 pb-16 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col justify-start items-center">
+        <div className="px-6 flex flex-col items-center">
+          <div className="inline-block mx-auto bg-white bg-opacity-10 border border-white border-opacity-20 rounded-full px-4 py-2 mb-8">
             <span className="text-sm font-medium text-white">Trusted by 10,000+ businesses worldwide</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
@@ -33,7 +33,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="w-screen relative left-[calc(-50vw+50%)] bg-white py-20">
+      <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
@@ -86,7 +86,7 @@ export default function HomePage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="w-screen relative left-[calc(-50vw+50%)] bg-slate-900 text-white py-20">
+      <section className="bg-slate-900 text-white py-20">
         <div className="px-6 text-center">
           <h2 className="text-4xl font-bold mb-6 text-white">Ready to Streamline Your Logistics?</h2>
           <Link

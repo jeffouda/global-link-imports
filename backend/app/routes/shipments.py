@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.user import User
 from app.models.shipment import Shipment
@@ -13,6 +13,7 @@ from app.schemas import (
 from app.utils.decorators import login_required, admin_required, driver_required
 from datetime import datetime
 import uuid
+import json
 from sqlalchemy.orm import joinedload
 
 shipment_bp = Blueprint("shipment", __name__)
@@ -20,7 +21,7 @@ shipment_bp = Blueprint("shipment", __name__)
 #
 
 
-@shipment_bp.route("/shipments", methods=["GET"])
+@shipment_bp.route("/shipments/", methods=["GET"], strict_slashes=False)
 @login_required
 def get_shipments():
     """
@@ -63,32 +64,64 @@ def get_shipments():
         )
 
     try:
-        data = shipments_schema.dump(shipments)
+        data = [s.to_dict() for s in shipments]
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 422
 
 
-@shipment_bp.route("/shipments", methods=["POST"])
+@shipment_bp.route("/admin/all", methods=["GET"], strict_slashes=False)
+@jwt_required()
+def get_all_shipments():
+    """
+    Admin only: Get all shipments.
+    """
+    try:
+        # 1. Get the User ID from the Token
+        current_user_data = get_jwt_identity()
+
+        # Handle cases where identity might be just an ID or a Dict
+        if isinstance(current_user_data, dict):
+            user_id = current_user_data.get("id")
+        else:
+            user_id = current_user_data
+
+        # 2. Verify Admin Role in Database
+        user = User.query.get(user_id)
+
+        if not user or user.role != "admin":
+            return jsonify({"error": "Access denied. Admins only."}), 403
+
+        # 3. Fetch All Shipments
+        shipments = Shipment.query.options(
+            joinedload(Shipment.shipment_items),
+            joinedload(Shipment.customer),
+            joinedload(Shipment.driver),
+        ).all()
+
+        # 4. Return Data
+        data = [s.to_dict() for s in shipments]
+        return jsonify(data), 200
+
+    except Exception as e:
+        print(f"Error in Admin Route: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@shipment_bp.route("/shipments/", methods=["POST"], strict_slashes=False)
 @login_required
 def create_shipment():
     """
-    Creates a new shipment AND links products to it (if provided).
-    Uses a database transaction to ensure data integrity.
+    Creates a new shipment with recipient, weight, and items as JSON string.
     """
     try:
         current_user = get_jwt_identity()
         user_id = current_user["id"]
 
-        # Get raw data
-        data = request.get_json()
-        print("Received Data:", data)
+        # Validate and load data
+        data = shipment_create_schema.load(request.get_json())
 
-        # Manual validation: only require origin and destination
-        if not data.get("origin") or not data.get("destination"):
-            return jsonify({"error": "Origin and destination are required"}), 400
-
-        # 1. Create the Shipment record
+        # Create the Shipment record
         tracking_number = str(uuid.uuid4())[:8].upper()
 
         target_id = data.get("customer_id", user_id)
@@ -97,38 +130,29 @@ def create_shipment():
             tracking_number=tracking_number,
             origin=data["origin"],
             destination=data["destination"],
+            recipient=data["recipient"],
+            weight=data["weight"],
             status="Pending",
             payment_status="Unpaid",
             notes=data.get("notes"),
+            items=json.dumps(data["items"]),
             customer_id=target_id,
             driver_id=data.get("driver_id"),  # Optional: Admin might assign later
             created_at=datetime.utcnow(),
         )
 
         db.session.add(new_shipment)
-        db.session.flush()  # Flush to generate the new_shipment.id
-
-        # 2. Handle Shipment Items (The products inside the box)
-        items = data.get("items", [])
-        for item in items:
-            if "product_id" in item and "quantity" in item:
-                link = ShipmentItem(
-                    shipment_id=new_shipment.id,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"],
-                )
-                db.session.add(link)
-
-        # 3. Commit everything
         db.session.commit()
         return jsonify(shipment_schema.dump(new_shipment)), 201
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 
-@shipment_bp.route("/shipments/<int:shipment_id>", methods=["GET"])
+@shipment_bp.route(
+    "/shipments/<int:shipment_id>", methods=["GET"], strict_slashes=False
+)
 @login_required
 def get_shipment(shipment_id):
     """
@@ -147,7 +171,7 @@ def get_shipment(shipment_id):
     if role not in ["admin", "driver"] and shipment.customer_id != user_id:
         return jsonify({"error": "Access denied"}), 403
 
-    return jsonify(shipment_schema.dump(shipment)), 200
+    return jsonify(shipment.to_dict()), 200
 
 
 @shipment_bp.route("/shipments/<int:shipment_id>", methods=["PATCH"])

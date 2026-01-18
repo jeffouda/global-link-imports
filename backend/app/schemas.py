@@ -89,6 +89,8 @@ class ShipmentCreateSchema(ma.Schema):
     tracking_number = fields.Str(required=False)  # Will be generated if not provided
     origin = fields.Str(required=True)
     destination = fields.Str(required=True)
+    recipient = fields.Str(required=True)
+    weight = fields.Float(required=True)
     notes = fields.Str(required=False)
     driver_id = fields.Int(required=False, allow_none=True)
     customer_id = fields.Int(required=False)
