@@ -37,9 +37,11 @@ export default function LoginForm() {
         throw new Error('Invalid credentials');
       }
       const data = await response.json();
+      console.log('Login response data:', data);
       // Map to expected format
       const loginData = {
-        token: data.access_token,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
         user: data.user
       };
       // 2. Update Context

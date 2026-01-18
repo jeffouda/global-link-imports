@@ -26,16 +26,18 @@ export default function RegisterForm() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ...form, username: form.name })
+        body: JSON.stringify({ username: form.name, email: form.email, password: form.password, role: form.role })
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
+        alert(errorData.message || errorData.error || 'Registration failed');
+        return;
       }
       alert("Account created! Please login");
       navigate("/login");
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+      setError('An error occurred during registration');
     }
   };
 
