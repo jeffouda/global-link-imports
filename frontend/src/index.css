@@ -1,34 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 1. Basic Font & Color Settings */
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* =========================
+   Custom CSS Variables & Resets
+========================= */
+@layer base {
+  :root {
+    /* Core Colors */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-  /* Default to Dark Mode colors */
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    /* Primary */
+    --primary: 222 47% 20%;
+    --primary-foreground: 210 40% 98%;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    /* Secondary / Accent */
+    --secondary: 173 58% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 173 58% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Muted */
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+    --destructive: 0 84% 60%;
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 15%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 173 58% 39%;
+    --sidebar-accent: 222 47% 20%;
+
+    /* Border/Input */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 173 58% 39%;
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(222 47% 20%) 0%,
+      hsl(222 47% 30%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(173 58% 39%) 0%,
+      hsl(173 58% 50%) 100%
+    );
+
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(222 47% 11% / 0.08),
+      0 4px 16px -4px hsl(222 47% 11% / 0.12);
+
+    /* Font & Text */
+    font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased min-h-screen;
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+  }
 }
 
-/* 2. Body Reset */
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  /* Note: Removed 'display: flex' and 'place-items: center' to fix layout */
+/* =========================
+   Components
+========================= */
+@layer components {
+  .card-elevated {
+    background-color: hsl(var(--card));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
+  }
+
+  .nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--input));
+    transition: all 0.2s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
+
+  .btn-primary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    background: var(--gradient-accent);
+    color: hsl(var(--accent-foreground));
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+  .animate-slideUp {
+    animation: slideUp 0.4s ease-out;
+  }
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+  }
 }
 
-/* 3. Automatic Light Mode Support */
-/* This only changes the background and text color, nothing else */
+/* =========================
+   Optional Light Mode Override
+========================= */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

@@ -1,17 +1,15 @@
 # Global Link Imports
 
-# Global Link Imports
-
 A comprehensive logistics and shipment management platform designed to streamline global import operations. This project features a robust Flask-based backend and a modern React frontend.
 
 ## Overview
 
-Global Link Imports provides a centralized system for managing users, products, and shipments. It allows logistics teams to track the movement of goods, manage inventory, and handle authentication securely.
+Global Link Imports (terabyte./inventory) is a logistics and tracking application focused on simplifying global supply chains. It provides a centralized system for managing users, products, and shipments, allowing teams to track goods, manage inventory, and handle authentication securely.
 
 ### Key Features
-- **Shipment Tracking:** Create, update, and monitor global shipments.
-- **Product Management:** Catalog and manage imported goods.
-- **User Authentication:** Secure signup and login with role-based access.
+- **Shipment Tracking:** Create, update, and monitor global shipments in real-time.
+- **Product Management:** Catalog and manage imported goods efficiently.
+- **User Authentication:** Secure signup and login with role-based access (Admin, Driver, Customer).
 - **Modern Dashboard:** Interactive frontend built with React and Tailwind CSS.
 
 ---
@@ -31,15 +29,13 @@ The project is split into two main components:
 - **Database:** PostgreSQL with SQLAlchemy ORM
 - **Migrations:** Flask-Migrate (Alembic)
 - **Security:** Flask-Bcrypt for password hashing
-- **Authentication:** Token-based (custom implementation)
+- **Authentication:** Token-based security
 
 ### Frontend
 - **Framework:** React 19 (Vite)
 - **Styling:** Tailwind CSS
 - **Routing:** React Router 7
-- **API Client:** Axios
 - **Icons:** Lucide React
-- **Forms:** React Hook Form
 
 ---
 
@@ -54,74 +50,7 @@ The project is split into two main components:
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
 flask db upgrade
 python run.py
-3. Frontend Setup
-From the project root directory:
-
-Bash
-
-cd frontend
-npm install
-Note: If dependencies fail, you can install core packages manually:
-
-Bash
-
-npm install react-router-dom lucide-react axios react-hook-form
-Run the Development Server:
-
-Bash
-
-npm run dev
-4. Tailwind Configuration (If needed)
-If you need to re-initialize Tailwind, follow these steps:
-
-Install & Init:
-
-Bash
-
-npm install -D tailwindcss@3 postcss autoprefixer
-npx tailwindcss init -p
-Configure tailwind.config.js:
-
-JavaScript
-
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-};
-Add Directives to src/index.css:
-
-CSS
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-Access the App
-The application will be available at:
-
-Frontend: http://localhost:5173
-
-Backend API: http://localhost:5000
-
-License
-MIT
-
-
-### Final Step: Save and Commit
-Once you have replaced the content:
-1.  **Save** the file.
-2.  Run these commands in your terminal:
-    ```bash
-    git add README.md
-    git commit -m "Resolved merge conflict: merged main overview with alvin frontend instructions"
-    git push
-    ```

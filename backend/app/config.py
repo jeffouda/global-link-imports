@@ -2,12 +2,14 @@ import os
 
 
 class Config:
-    # Generates a random key if one isn't provided (for security)
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-key-please-change-in-prod"
+    # Key for signing cookies/tokens
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "super-secret-logistic-key"
 
-    # The database connection string
-    # It uses the one in .env, or creates a local sqlite file called 'app.db'
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI") or "sqlite:///app.db"
-
-    # Performance setting (Turn off to save memory)
+    # Database Location
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///logistic.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # JWT Configuration
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "jwt-secret-string"
+    JWT_ACCESS_TOKEN_EXPIRES = 900  # 15 minutes
+    JWT_REFRESH_TOKEN_EXPIRES = 604800  # 7 days

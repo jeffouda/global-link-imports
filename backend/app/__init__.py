@@ -1,48 +1,46 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+from flask_migrate import Migrate
+from flask_marshmallow import Marshmallow
 from app.config import Config
 
-# 1. Initialize the extensions (but don't bind to app yet)
+# Initialize Extensions (Global scope)
 db = SQLAlchemy()
-migrate = Migrate()
 bcrypt = Bcrypt()
-cors = CORS()
+jwt = JWTManager()
+migrate = Migrate()
+ma = Marshmallow()
 
 
 def create_app(config_class=Config):
-    # 2. Create the Flask app instance
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # 3. Bind extensions to the app
+    # Init extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    jwt.init_app(app)
+    ma.init_app(app)
 
-    # Allow CORS for localhost:5173 (Vite) and localhost:3000 (standard React)
-    cors.init_app(
-        app,
-        resources={
-            r"/*": {"origins": ["http://localhost:5173", "http://localhost:3000"]}
-        },
-    )
+    # Enable CORS (Allow Frontend running on localhost:3000 to talk to backend)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-    # 4. Import and Register Blueprints (Routes)
-    # We do this inside the function to avoid "Circular Import" errors
+    # Import models to ensure they are registered with SQLAlchemy
+    from app import models
+
+    # Register Blueprints (Connecting your routes)
     from app.routes.auth import auth_bp
+    from app.routes.product import product_bp
     from app.routes.shipments import shipment_bp
-    # from app.routes.products import product_bp (Uncomment when you create this file)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(shipment_bp, url_prefix="/api/shipments")
-    # app.register_blueprint(product_bp, url_prefix='/api/products')
+    app.register_blueprint(product_bp, url_prefix="/api")
+    app.register_blueprint(shipment_bp, url_prefix="/api")
 
-    # 5. Simple Test Route
-    @app.route("/")
-    def home():
-        return {"message": "Global Link Imports API is running!"}
+    # You will register other blueprints here later (e.g., shipments_bp)
 
     return app
