@@ -4,6 +4,16 @@ import { Box, Truck, CheckCircle, ArrowRight, Plus } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const sanitizeShipment = (data) => {
+  return {
+    ...data,
+    items: Array.isArray(data.items) ? data.items : [],
+    recipient: data.recipient || 'Unknown',
+    weight: data.weight || 0,
+    status: data.status || 'Pending'
+  };
+};
+
 const CustomerDashboard = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
@@ -12,16 +22,28 @@ const CustomerDashboard = () => {
     const fetchShipments = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const res = await axios.get('http://localhost:5000/api/shipments', {
+        const url = user.role === 'admin'
+          ? 'http://localhost:5000/api/shipments/admin/all/'
+          : 'http://localhost:5000/api/shipments/';
+        const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setOrders(res.data);
+        console.log("Data Received:", res.data);
+        console.log("Is Array?", Array.isArray(res.data));
+        const rawData = Array.isArray(res.data) ? res.data : res.data.data || [];
+        const sanitizedData = rawData.map(sanitizeShipment);
+        setOrders(sanitizedData);
       } catch (err) {
         console.error("Error fetching shipments", err);
+        if (err.response && err.response.status === 401) {
+          // Force logout on unauthorized
+          localStorage.removeItem('access_token');
+          window.location.href = '/login';
+        }
       }
     };
     fetchShipments();
-  }, []);
+  }, [user.role]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -97,7 +119,10 @@ const CustomerDashboard = () => {
           {orders.map((order) => (
             <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-sm font-mono text-teal-600">{order.tracking}</span>
+                <div>
+                  <p className="text-sm font-mono text-teal-600">Tracking ID: #{order.id}</p>
+                  <p className="text-xs text-gray-500">Tracking #: {order.tracking_number}</p>
+                </div>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
                 </span>
@@ -109,7 +134,7 @@ const CustomerDashboard = () => {
               </div>
               <div className="flex justify-between items-center text-xs text-gray-500">
                 <span>Est. Delivery: TBD</span>
-                <span className={getPaymentColor(order.payment)}>{order.payment}</span>
+                <span className={getPaymentColor(order.payment_status)}>{order.payment_status}</span>
               </div>
             </div>
           ))}

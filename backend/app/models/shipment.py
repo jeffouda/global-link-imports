@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from app import db
 
 # shipment.py - Shipment Model
@@ -42,6 +43,15 @@ class Shipment(db.Model):
     # notes for additional customer instructions
     notes = db.Column(db.Text, nullable=True)
 
+    # recipient name
+    recipient = db.Column(db.String(100), nullable=True)
+
+    # weight in kg
+    weight = db.Column(db.Float, nullable=True)
+
+    # items as JSON string
+    items = db.Column(db.Text, nullable=True)
+
     # created_at uses datetime.utcnow to maintain a standardized timeline across timezones.
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -78,12 +88,14 @@ class Shipment(db.Model):
             "status": self.status,
             "origin": self.origin,
             "destination": self.destination,
+            "recipient": self.recipient,
+            "weight": self.weight,
             "payment_status": self.payment_status,
             "notes": self.notes,
             "customer_id": self.customer_id,
             "driver_id": self.driver_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "items": [item.to_dict() for item in self.shipment_items],
+            "items": json.loads(self.items) if self.items else [],
         }
 
     def __repr__(self):

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Box, Plus, Trash2, Package, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const CreateShipmentPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const CreateShipmentPage = () => {
 
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
+  const [recipient, setRecipient] = useState('');
+  const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
   const [products, setProducts] = useState([{ product: '', quantity: 1 }]);
 
@@ -43,33 +46,38 @@ const CreateShipmentPage = () => {
     e.preventDefault();
 
     // Validation
-    if (!origin.trim() || !destination.trim() || products.some(p => !p.product || p.quantity <= 0)) {
+    if (!origin.trim() || !destination.trim() || !recipient.trim() || !weight || products.some(p => !p.product || p.quantity <= 0)) {
       alert('Please fill in all required fields.');
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('Please log in to create a shipment.');
       return;
     }
 
     const payload = {
       origin: origin || 'Nairobi',
       destination,
+      recipient,
+      weight: parseFloat(weight),
       notes,
       items: products.map(p => ({ product_id: 1, quantity: p.quantity })) // Using mock product_id for now
     };
     console.log("Sending Payload:", payload);
 
+    const config = {
+      headers: { Authorization: `Bearer ${token}` }
+    };
+
     try {
-      const response = await fetch(`${API_BASE}/shipments`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create shipment');
-      }
+      const response = await axios.post(`${API_BASE}/shipments/`, payload, config);
       alert('Shipment Created!');
       localStorage.setItem('refreshDashboard', Date.now().toString());
       navigate('/dashboard');
     } catch (err) {
-      alert('Error creating shipment: ' + err.message);
+      alert('Error creating shipment: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -112,6 +120,30 @@ const CreateShipmentPage = () => {
                     onChange={(e) => setDestination(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="e.g., Mombasa"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Name</label>
+                  <input
+                    type="text"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="e.g., John Doe"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="e.g., 5.5"
                     required
                   />
                 </div>

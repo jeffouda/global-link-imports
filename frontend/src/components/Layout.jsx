@@ -2,11 +2,11 @@ import Navbar from './Navbar';
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen">
+    <div>
       <Navbar />
-      <div className="container mx-auto p-4">
+      <main className="pt-18">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
