@@ -39,8 +39,38 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(false);
   };
 
+  const forgotPassword = async (email) => {
+    const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+    return data;
+  };
+
+  const resetPassword = async (email, code, newPassword) => {
+    const response = await fetch('http://localhost:5000/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code, new_password: newPassword }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, login, logout, forgotPassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

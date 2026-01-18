@@ -3,9 +3,11 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  useLocation,
 } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import SidebarLayout from "./components/SidebarLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
@@ -19,9 +21,13 @@ import TrackOrderPage from "./pages/TrackOrderPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const hideNavbar = ['/login', '/register'].includes(location.pathname);
+
   return (
-    <Router>
+    <div className="w-full min-h-screen bg-gray-50 text-slate-800">
+      {!hideNavbar && <Layout />}
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<HomePage />} />
@@ -30,16 +36,24 @@ function App() {
 
         {/* Other routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/inventory" element={<Layout><InventoryPage /></Layout>} />
+        <Route path="/inventory" element={<SidebarLayout><InventoryPage /></SidebarLayout>} />
         <Route path="/create-shipment" element={<ProtectedRoute><CreateShipmentPage /></ProtectedRoute>} />
-        <Route path="/shipments" element={<Layout><ShipmentListPage /></Layout>} />
-        <Route path="/shipments/:id" element={<Layout><ShipmentDetailsPage /></Layout>} />
+        <Route path="/shipments" element={<SidebarLayout><ShipmentListPage /></SidebarLayout>} />
+        <Route path="/shipments/:id" element={<SidebarLayout><ShipmentDetailsPage /></SidebarLayout>} />
         <Route path="/tracking" element={<ProtectedRoute><TrackOrderPage /></ProtectedRoute>} />
 
         {/* Error pages */}
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
