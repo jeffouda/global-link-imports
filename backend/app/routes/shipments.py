@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app import db
+from app.models.user import User
 from app.models.shipment import Shipment
 from app.models.shipment_item import ShipmentItem
 from app.schemas import (
@@ -30,18 +31,33 @@ def get_shipments():
     """
     current_user = get_jwt_identity()
     user_id = current_user["id"]
-    role = current_user["role"]
+    user = User.query.get(user_id)
 
-    if role in ["admin", "driver"]:
+    if user.role == "admin":
         shipments = Shipment.query.options(
-            joinedload(Shipment.shipment_items).joinedload(ShipmentItem.product)
+            joinedload(Shipment.shipment_items),
+            joinedload(Shipment.customer),
+            joinedload(Shipment.driver),
         ).all()
+    elif user.role == "driver":
+        shipments = (
+            Shipment.query
+            .filter_by(driver_id=user.id)
+            .options(
+                joinedload(Shipment.shipment_items),
+                joinedload(Shipment.customer),
+                joinedload(Shipment.driver),
+            )
+            .all()
+        )
     else:
         shipments = (
             Shipment.query
-            .filter_by(customer_id=user_id)
+            .filter_by(customer_id=user.id)
             .options(
-                joinedload(Shipment.shipment_items).joinedload(ShipmentItem.product)
+                joinedload(Shipment.shipment_items),
+                joinedload(Shipment.customer),
+                joinedload(Shipment.driver),
             )
             .all()
         )
@@ -64,19 +80,27 @@ def create_shipment():
         current_user = get_jwt_identity()
         user_id = current_user["id"]
 
-        # Validate input data using Marshmallow
-        data = shipment_create_schema.load(request.get_json())
+        # Get raw data
+        data = request.get_json()
+        print("Received Data:", data)
+
+        # Manual validation: only require origin and destination
+        if not data.get("origin") or not data.get("destination"):
+            return jsonify({"error": "Origin and destination are required"}), 400
 
         # 1. Create the Shipment record
         tracking_number = str(uuid.uuid4())[:8].upper()
 
+        target_id = data.get("customer_id", user_id)
+
         new_shipment = Shipment(
             tracking_number=tracking_number,
-            origin=data.get("origin", "Nairobi"),
-            destination=data.get("destination"),
+            origin=data["origin"],
+            destination=data["destination"],
             status="Pending",
             payment_status="Unpaid",
-            customer_id=user_id,
+            notes=data.get("notes"),
+            customer_id=target_id,
             driver_id=data.get("driver_id"),  # Optional: Admin might assign later
             created_at=datetime.utcnow(),
         )
@@ -85,8 +109,9 @@ def create_shipment():
         db.session.flush()  # Flush to generate the new_shipment.id
 
         # 2. Handle Shipment Items (The products inside the box)
-        if "items" in data:
-            for item in data["items"]:
+        items = data.get("items", [])
+        for item in items:
+            if "product_id" in item and "quantity" in item:
                 link = ShipmentItem(
                     shipment_id=new_shipment.id,
                     product_id=item["product_id"],
@@ -140,12 +165,22 @@ def update_shipment(shipment_id):
     data = request.get_json()
 
     try:
-        # Admin Logic: Can assign drivers
+        new_status = data.get("status")
+
+        # Business Rule: No Pay, No Delivery
+        if new_status == "Delivered" and shipment.payment_status != "Paid":
+            return jsonify({
+                "error": "Cannot mark as Delivered. Payment is pending."
+            }), 400
+
+        # Admin Logic: Can assign drivers and update payment
         if role == "admin":
             if "driver_id" in data:
                 shipment.driver_id = data["driver_id"]
             if "status" in data:
                 shipment.status = data["status"]
+            if "payment_status" in data:
+                shipment.payment_status = data["payment_status"]
 
         # Driver Logic: Can only update status
         if role == "driver":
@@ -167,3 +202,16 @@ def delete_shipment(shipment_id):
     db.session.delete(shipment)
     db.session.commit()
     return jsonify({"message": "Shipment deleted"}), 200
+
+
+@shipment_bp.route("/shipments/track/<tracking_number>", methods=["GET"])
+def track_shipment(tracking_number):
+    """
+    Public route to track a shipment by tracking number.
+    """
+    print(f"Searching for: {tracking_number}")
+    shipment = Shipment.query.filter_by(tracking_number=tracking_number.upper()).first()
+    print(f"Found shipment: {shipment}")
+    if not shipment:
+        return jsonify({"error": "Shipment not found"}), 404
+    return jsonify(shipment_schema.dump(shipment)), 200
