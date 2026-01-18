@@ -64,24 +64,34 @@ class ShipmentItemSchema(ma.Schema):
     quantity = fields.Int()
 
 
-class ShipmentSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Shipment
-        sqla_session = db.session
-        load_instance = True
-        include_fk = True
+class ShipmentSchema(ma.Schema):
+    id = fields.Int()
+    tracking = fields.Str(attribute="tracking_number")
+    status = fields.Str()
+    origin = fields.Str()
+    destination = fields.Str()
+    payment = fields.Str(attribute="payment_status")
+    customer_id = fields.Int()
+    driver_id = fields.Int()
+    created_at = fields.DateTime()
+    customerEmail = fields.Method("get_customer_email")
+    driverName = fields.Method("get_driver_name")
+    # items = fields.Nested(ShipmentItemSchema, many=True)
 
-    # Include nested items
-    items = fields.Nested(ShipmentItemSchema, many=True, exclude=("shipment",))
-    # Ensure customer_id is included
-    customer_id = auto_field()
+    def get_customer_email(self, obj):
+        return obj.customer.email if obj.customer else None
+
+    def get_driver_name(self, obj):
+        return obj.driver.username if obj.driver else None
 
 
 class ShipmentCreateSchema(ma.Schema):
     tracking_number = fields.Str(required=False)  # Will be generated if not provided
     origin = fields.Str(required=True)
     destination = fields.Str(required=True)
+    notes = fields.Str(required=False)
     driver_id = fields.Int(required=False, allow_none=True)
+    customer_id = fields.Int(required=False)
     items = fields.List(
         fields.Dict(keys=fields.Str(), values=fields.Raw()), required=True
     )

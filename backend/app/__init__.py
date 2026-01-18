@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from app.config import Config
-from app.extensions import db, bcrypt, jwt, migrate, ma
+from app.extensions import db, bcrypt, jwt, migrate, ma, mail
 
 
 def create_app(config_class=Config):
@@ -14,6 +14,7 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     jwt.init_app(app)
     ma.init_app(app)
+    mail.init_app(app)
 
     # Enable CORS (Allow Frontend running on localhost:5173 to talk to backend)
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
