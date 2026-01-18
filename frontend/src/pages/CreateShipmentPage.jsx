@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Box, Plus, Trash2 } from 'lucide-react';
-import Navbar from '../components/Navbar';
+import { MapPin, Box, Plus, Trash2, Package, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { createShipment } from '../utils/mockApi';
 
 const CreateShipmentPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const API_BASE = 'http://localhost:5000/api';
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token')?.replace(/"/g, '');
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
 
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -40,8 +48,23 @@ const CreateShipmentPage = () => {
       return;
     }
 
+    const payload = {
+      origin: origin || 'Nairobi',
+      destination,
+      notes,
+      items: products.map(p => ({ product_id: 1, quantity: p.quantity })) // Using mock product_id for now
+    };
+    console.log("Sending Payload:", payload);
+
     try {
-      await createShipment({ destination, items: products, userId: user.id, customer: user.username });
+      const response = await fetch(`${API_BASE}/shipments`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create shipment');
+      }
       alert('Shipment Created!');
       localStorage.setItem('refreshDashboard', Date.now().toString());
       navigate('/dashboard');
@@ -51,22 +74,22 @@ const CreateShipmentPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      {/* Main Content */}
-      <main className="container mx-auto p-6 max-w-4xl">
-        <div className="mb-8">
+    <div className="min-h-screen w-full bg-gray-50 pt-28 px-4 pb-10">
+      <div className="max-w-4xl mx-auto">
+        {/* Page Header */}
+        <div className="text-center mb-8">
+          <Box className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-900">Create New Shipment</h1>
           <p className="text-gray-600 mt-2">Fill out the form below to create a new shipment.</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        {/* Main Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Shipping Details */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <MapPin className="w-5 h-5 mr-2" />
+                <MapPin className="w-5 h-5 mr-2 text-emerald-600" />
                 Shipping Details
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -76,7 +99,7 @@ const CreateShipmentPage = () => {
                     type="text"
                     value={origin}
                     onChange={(e) => setOrigin(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="e.g., Nairobi"
                     required
                   />
@@ -87,7 +110,7 @@ const CreateShipmentPage = () => {
                     type="text"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="e.g., Mombasa"
                     required
                   />
@@ -98,7 +121,7 @@ const CreateShipmentPage = () => {
             {/* Products */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <Box className="w-5 h-5 mr-2" />
+                <Package className="w-5 h-5 mr-2 text-emerald-600" />
                 Products
               </h2>
               <div className="space-y-4">
@@ -108,7 +131,7 @@ const CreateShipmentPage = () => {
                       <select
                         value={prod.product}
                         onChange={(e) => updateProduct(index, 'product', e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         required
                       >
                         <option value="">Select Product</option>
@@ -123,7 +146,7 @@ const CreateShipmentPage = () => {
                         min="1"
                         value={prod.quantity}
                         onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         required
                       />
                     </div>
@@ -139,38 +162,41 @@ const CreateShipmentPage = () => {
                 <button
                   type="button"
                   onClick={addProduct}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-teal-500 hover:text-teal-500 transition flex items-center justify-center"
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-emerald-500 hover:text-emerald-500 transition flex items-center justify-center"
                 >
                   <Plus className="w-5 h-5 mr-2" />
-                  Add Another Product
+                  Add Product
                 </button>
               </div>
             </div>
 
             {/* Additional Notes */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Additional Notes</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-emerald-600" />
+                Additional Notes
+              </h2>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="Any special instructions or notes..."
               />
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6">
+            <div className="flex justify-end">
               <button
                 type="submit"
-                className="w-full bg-teal-500 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-teal-600 transition"
+                className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
               >
                 Create Shipment
               </button>
             </div>
           </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

@@ -1,104 +1,102 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Truck, BarChart3, Users, Shield, Search } from "lucide-react";
+import { Link } from 'react-router-dom';
 
-const Homepage = () => {
-  const features = [
-    {
-      icon: <Truck className="w-8 h-8" />,
-      title: "Fast Shipping",
-      description: "Reliable delivery services with real-time tracking"
-    },
-    {
-      icon: <BarChart3 className="w-8 h-8" />,
-      title: "Analytics Dashboard",
-      description: "Comprehensive insights into your shipping operations"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Multi-User Support",
-      description: "Role-based access for admins, drivers, and customers"
-    },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Secure Platform",
-      description: "Enterprise-grade security for your logistics data"
-    }
-  ];
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="w-full">
       {/* Hero Section */}
-      <div className="flex items-center justify-center px-4 py-20">
-        <div className="card-elevated max-w-4xl mx-auto p-12 text-center animate-fadeIn">
-          <div className="mb-8">
-            <Truck className="w-16 h-16 text-primary mx-auto mb-4" />
+      <section className="w-screen relative left-[calc(-50vw+50%)] min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col justify-start items-center pt-32">
+        <div className="px-6">
+          <div className="inline-block bg-white bg-opacity-10 border border-white border-opacity-20 rounded-full px-4 py-2 mb-8">
+            <span className="text-sm font-medium text-white">Trusted by 10,000+ businesses worldwide</span>
           </div>
-          <h1 className="text-5xl font-bold text-primary mb-6">
-            Welcome to Global Link Imports
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
+            Global Logistics, <span className="text-teal-400">Simplified</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Track shipments, manage deliveries, and monitor your orders all in one
-            place. Experience seamless logistics management with our modern platform.
+          <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto">
+            Streamline your supply chain with our comprehensive logistics platform.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/login">
-              <button className="border-2 border-secondary text-secondary font-semibold py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-secondary hover:text-white">
-                Login
-              </button>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link
+              to="/dashboard"
+              className="px-8 py-4 bg-teal-500 text-white rounded-lg font-semibold text-lg hover:bg-teal-600 transition"
+            >
+              Go to Dashboard
             </Link>
-            <Link to="/register">
-              <button className="bg-secondary text-white font-semibold py-3 px-8 rounded-lg shadow-card transition duration-300 transform hover:scale-105">
-                Get Started
-              </button>
+            <Link
+              to="/dashboard"
+              className="px-8 py-4 border border-white text-white rounded-lg font-semibold text-lg hover:bg-white hover:text-slate-900 transition"
+            >
+              Track Shipment
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features Section */}
-      <div className="px-4 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Why Choose Global Link?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our platform provides everything you need for efficient logistics management
+      {/* Features Grid */}
+      <section className="w-screen relative left-[calc(-50vw+50%)] bg-white py-20">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Why Choose <span className="text-teal-500">Global Link</span>?
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              We combine cutting-edge technology with decades of logistics expertise to deliver unmatched service quality.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="card-elevated p-6 text-center animate-fadeIn" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="rounded-xl p-4 bg-primary/10 text-primary inline-block mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+            <div className="group max-w-xs mx-auto w-full bg-white shadow-sm rounded-2xl p-6 border border-gray-100 aspect-square flex flex-col justify-center items-center text-center transition-shadow duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 transition-colors group-hover:bg-teal-100">
+                <svg className="w-8 h-8 text-teal-500 transition-colors duration-300 group-hover:text-teal-700" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                  <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
+                </svg>
               </div>
-            ))}
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Real-time Tracking</h3>
+              <p className="text-gray-600">Monitor your shipments in real-time with our advanced tracking system.</p>
+            </div>
+            <div className="group max-w-xs mx-auto w-full bg-white shadow-sm rounded-2xl p-6 border border-gray-100 aspect-square flex flex-col justify-center items-center text-center transition-shadow duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 transition-colors group-hover:bg-teal-100">
+                <svg className="w-8 h-8 text-teal-500 transition-colors duration-300 group-hover:text-teal-700" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Global Network</h3>
+              <p className="text-gray-600">Access our extensive global network for seamless international shipping.</p>
+            </div>
+            <div className="group max-w-xs mx-auto w-full bg-white shadow-sm rounded-2xl p-6 border border-gray-100 aspect-square flex flex-col justify-center items-center text-center transition-shadow duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 transition-colors group-hover:bg-teal-100">
+                <svg className="w-8 h-8 text-teal-500 transition-colors duration-300 group-hover:text-teal-700" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Handling</h3>
+              <p className="text-gray-600">Your shipments are handled with the highest security standards.</p>
+            </div>
+            <div className="group max-w-xs mx-auto w-full bg-white shadow-sm rounded-2xl p-6 border border-gray-100 aspect-square flex flex-col justify-center items-center text-center transition-shadow duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4 transition-colors group-hover:bg-teal-100">
+                <svg className="w-8 h-8 text-teal-500 transition-colors duration-300 group-hover:text-teal-700" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Fast Delivery</h3>
+              <p className="text-gray-600">Experience lightning-fast delivery with our optimized logistics.</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="px-4 py-20 bg-card">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">Ready to Get Started?</h2>
-          <p className="text-muted-foreground mb-8">
-            Join thousands of businesses using Global Link for their logistics needs
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="gradient-primary text-white font-semibold py-3 px-8 rounded-lg shadow-card">
-              Start Free Trial
-            </button>
-            <button className="btn-primary">
-              Contact Sales
-            </button>
-          </div>
+      {/* Bottom CTA */}
+      <section className="w-screen relative left-[calc(-50vw+50%)] bg-slate-900 text-white py-20">
+        <div className="px-6 text-center">
+          <h2 className="text-4xl font-bold mb-6 text-white">Ready to Streamline Your Logistics?</h2>
+          <Link
+            to="/create-shipment"
+            className="inline-block px-8 py-4 bg-teal-500 text-white rounded-lg font-semibold text-lg hover:bg-teal-600 transition"
+          >
+            Create New Shipment
+          </Link>
         </div>
-      </div>
+      </section>
     </div>
   );
-};
-
-export default Homepage;
+}

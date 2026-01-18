@@ -1,160 +1,192 @@
 import React, { useState } from 'react';
-import { Search, Box, Clock, Truck, CheckCircle, ArrowRight } from 'lucide-react';
-import Navbar from '../components/Navbar';
+import { Search, ArrowRight, Package, Clock, Truck, CheckCircle, MapPin } from 'lucide-react';
+import axios from 'axios';
 
 const TrackOrderPage = () => {
-  const [query, setQuery] = useState('');
-  const [trackingData, setTrackingData] = useState(null);
+  const [trackingId, setTrackingId] = useState('');
+  const [shipmentData, setShipmentData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const MOCK_SHIPMENT = {
-    trackingNumber: 'GLI-2024-001234',
-    status: 'In Transit',
-    origin: 'Nairobi',
-    destination: 'Mombasa',
-    orderDate: '2024-01-10',
-    estDelivery: '2024-01-20',
-    paymentStatus: 'Paid',
-    items: ['Electronics Bundle x50', 'Office Supplies x20']
+  const handleTrack = async () => {
+    if (!trackingId.trim()) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await axios.get(`http://localhost:5000/api/shipments/track/${trackingId}`);
+      setShipmentData(res.data);
+    } catch (err) {
+      setError('Shipment not found');
+      setShipmentData(null);
+    }
+    setLoading(false);
   };
 
-  const handleTrack = () => {
-    if (query.trim() === MOCK_SHIPMENT.trackingNumber) {
-      setTrackingData(MOCK_SHIPMENT);
-    } else {
-      alert('Tracking number not found');
-      setTrackingData(null);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleTrack();
     }
   };
 
   const getStatusBadge = (status) => {
     const styles = {
+      'Delivered': 'bg-emerald-100 text-emerald-800',
       'In Transit': 'bg-blue-100 text-blue-800',
-      'Delivered': 'bg-green-100 text-green-800',
-      'Pending': 'bg-yellow-100 text-yellow-800'
+      'Pending': 'bg-amber-100 text-amber-800',
+      'Processing': 'bg-amber-100 text-amber-800',
+      'Cancelled': 'bg-rose-100 text-rose-700'
     };
     return styles[status] || 'bg-gray-100 text-gray-800';
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+  const getStepStatus = (status) => {
+    const statuses = ['Pending', 'Processing', 'In Transit', 'Delivered'];
+    return statuses.indexOf(status);
+  };
 
-      <div className="container mx-auto p-6 max-w-4xl">
-        {/* Search Section */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h1 className="text-3xl font-bold text-center text-gray-900 mb-6">Track Your Shipment</h1>
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter tracking number (e.g., GLI-2024-001234)"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
-            </div>
-            <button
-              onClick={handleTrack}
-              className="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition"
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center pt-40 px-6 bg-gray-50 relative z-10">
+      {/* Search Section */}
+      <div className="w-full max-w-2xl text-center">
+        <div className="bg-emerald-100 rounded-full p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+          <Search className="w-8 h-8 text-emerald-600" />
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Track Your Shipment</h1>
+        <p className="text-gray-600 mb-8">Enter your tracking number or order ID to see the current status...</p>
+
+        <div className="relative mb-6">
+          <input
+            type="text"
+            value={trackingId}
+            onChange={(e) => setTrackingId(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter tracking number or order ID"
+            className="w-full px-6 py-4 pr-32 text-lg border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <button
+            onClick={handleTrack}
+            disabled={loading}
+            className="absolute right-2 top-2 bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
+          >
+            {loading ? 'Tracking...' : 'Track Order'}
+          </button>
+        </div>
+
+        <div className="mb-8">
+          <p className="text-sm text-gray-500 mb-2">Try these sample numbers:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <span
+              className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200"
+              onClick={() => setTrackingId('GL-2024-001')}
             >
-              Track Order
-            </button>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm text-gray-500 mb-2">Try these sample numbers:</p>
-            <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200" onClick={() => setQuery('GLI-2024-001234')}>GLI-2024-001234</span>
+              GL-2024-001
+            </span>
+            <span
+              className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200"
+              onClick={() => setTrackingId('GL-2024-002')}
+            >
+              GL-2024-002
+            </span>
           </div>
         </div>
 
-        {/* Result Section */}
-        {trackingData && (
-          <div className="bg-white rounded-lg shadow-sm">
-            {/* Header */}
-            <div className="bg-slate-900 text-white p-6 rounded-t-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-300">Tracking Number</p>
-                  <p className="text-2xl font-bold">{trackingData.trackingNumber}</p>
+        {error && <p className="text-red-600 mb-4">{error}</p>}
+      </div>
+
+      {/* Result Section */}
+      {shipmentData && (
+        <div className="w-full max-w-4xl">
+          {/* Header */}
+          <div className="bg-slate-900 text-white p-6 rounded-t-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-300">Tracking Number</p>
+                <p className="text-2xl font-bold">{shipmentData.tracking_number}</p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(shipmentData.status)}`}>
+                {shipmentData.status}
+              </span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="bg-white p-6">
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(getStepStatus(shipmentData.status) / 3) * 100}%` }}
+                  ></div>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(trackingData.status)}`}>
-                  {trackingData.status}
+              </div>
+              <div className="flex justify-between">
+                {[
+                  { label: 'Order Placed', icon: Package },
+                  { label: 'Processing', icon: Clock },
+                  { label: 'In Transit', icon: Truck },
+                  { label: 'Delivered', icon: CheckCircle }
+                ].map((step, index) => {
+                  const Icon = step.icon;
+                  const isActive = index <= getStepStatus(shipmentData.status);
+                  return (
+                    <div key={index} className="text-center">
+                      <div className={`w-10 h-10 rounded-full mx-auto flex items-center justify-center mb-2 ${
+                        isActive ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <p className={`text-xs ${isActive ? 'text-green-600' : 'text-gray-500'}`}>{step.label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-500">Origin</p>
+                  <p className="font-semibold">{shipmentData.origin}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <ArrowRight className="w-6 h-6 text-gray-400" />
+              </div>
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-500">Destination</p>
+                  <p className="font-semibold">{shipmentData.destination}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Current Location</p>
+                <p className="font-semibold">{shipmentData.current_location || shipmentData.origin}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Estimated Delivery</p>
+                <p className="font-semibold">{shipmentData.estimated_delivery || 'TBD'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Payment Status</p>
+                <span className={`inline-block px-2 py-1 rounded-full text-sm font-medium ${
+                  shipmentData.payment === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {shipmentData.payment}
                 </span>
               </div>
             </div>
-
-            {/* Card Body */}
-            <div className="p-6">
-              {/* Route Row */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">Origin</p>
-                  <p className="text-lg font-semibold">{trackingData.origin}</p>
-                </div>
-                <ArrowRight className="w-6 h-6 text-gray-400" />
-                <div className="text-center">
-                  <p className="text-sm text-gray-500">Destination</p>
-                  <p className="text-lg font-semibold">{trackingData.destination}</p>
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="mb-8">
-                <div className="flex items-center mb-4">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{width: '75%'}}></div>
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  {['Order Placed', 'Processing', 'In Transit', 'Delivered'].map((step, index) => (
-                    <div key={index} className="text-center">
-                      <div className={`w-8 h-8 rounded-full mx-auto flex items-center justify-center ${index < 3 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'}`}>
-                        {index === 0 && <Box className="w-4 h-4" />}
-                        {index === 1 && <Clock className="w-4 h-4" />}
-                        {index === 2 && <Truck className="w-4 h-4" />}
-                        {index === 3 && <CheckCircle className="w-4 h-4" />}
-                      </div>
-                      <p className="text-xs mt-1">{step}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Details Grid */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div>
-                  <p className="text-sm text-gray-500">Order Date</p>
-                  <p className="font-semibold">{trackingData.orderDate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Est. Delivery</p>
-                  <p className="font-semibold">{trackingData.estDelivery}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Payment Status</p>
-                  <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">{trackingData.paymentStatus}</span>
-                </div>
-              </div>
-
-              {/* Items Section */}
-              <div className="border-t border-gray-100 pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Items in Shipment</h3>
-                <div className="space-y-2">
-                  {trackingData.items.map((item, index) => {
-                    const [name, quantity] = item.split(' x');
-                    return (
-                      <div key={index} className="flex justify-between items-center px-6 py-4 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700">{name}</span>
-                        <span className="text-gray-500">{quantity}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="mt-auto bg-[#0B1120] text-slate-400 py-8 text-center w-full">
+        © 2024 GlobalLink. All rights reserved.
+      </footer>
     </div>
   );
 };
