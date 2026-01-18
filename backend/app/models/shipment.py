@@ -39,6 +39,9 @@ class Shipment(db.Model):
     # payment_status helps the business track revenue and prevents shipping unpaid goods.
     payment_status = db.Column(db.String, nullable=False, default="Unpaid")
 
+    # notes for additional customer instructions
+    notes = db.Column(db.Text, nullable=True)
+
     # created_at uses datetime.utcnow to maintain a standardized timeline across timezones.
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -49,6 +52,12 @@ class Shipment(db.Model):
     # driver_id: Links to the User (Driver role) responsible for the physical delivery.
     # We set nullable=True because a shipment might not have a driver assigned immediately.
     driver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    # Relationships
+    customer = db.relationship("User", foreign_keys=[customer_id], backref="shipments")
+    driver = db.relationship(
+        "User", foreign_keys=[driver_id], backref="assigned_shipments"
+    )
 
     # 4. Many-to-Many Relationship:
     # A shipment can have many products, and one product can be in many shipments.
@@ -70,6 +79,7 @@ class Shipment(db.Model):
             "origin": self.origin,
             "destination": self.destination,
             "payment_status": self.payment_status,
+            "notes": self.notes,
             "customer_id": self.customer_id,
             "driver_id": self.driver_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,

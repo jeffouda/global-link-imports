@@ -1,4 +1,5 @@
 from app import db, bcrypt
+from datetime import datetime
 
 
 class User(db.Model):
@@ -11,6 +12,10 @@ class User(db.Model):
 
     # Role: 'admin', 'driver', 'customer'
     role = db.Column(db.String(20), default="customer", nullable=False)
+
+    # Password reset fields
+    reset_token = db.Column(db.String(128), nullable=True)
+    token_expiry = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         """Creates a hash of the password."""
