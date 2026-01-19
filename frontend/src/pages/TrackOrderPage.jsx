@@ -185,7 +185,7 @@ const TrackOrderPage = () => {
 
       {/* Footer */}
       <footer className="mt-auto bg-[#0B1120] text-slate-400 py-8 text-center w-full">
-        © 2024 GlobalLink. All rights reserved.
+        © 2026 GlobalLink. All rights reserved.
       </footer>
     </div>
   );
