@@ -99,18 +99,8 @@ class ShipmentCreateSchema(ma.Schema):
     driver_id = fields.Int(required=False, allow_none=True)
     customer_id = fields.Int(required=False)
     items = fields.List(
-        fields.Dict(keys=fields.Str(), values=fields.Raw()), required=True
+        fields.Dict(keys=fields.Str(), values=fields.Raw()), required=False
     )
-
-    @validates("items")
-    def validate_items(self, value):
-        if not value:
-            raise ValidationError("At least one item is required")
-        for item in value:
-            if "product_id" not in item or "quantity" not in item:
-                raise ValidationError("Each item must have product_id and quantity")
-            if not isinstance(item["quantity"], int) or item["quantity"] <= 0:
-                raise ValidationError("Quantity must be a positive integer")
 
 
 class ShipmentStatusUpdateSchema(ma.Schema):

@@ -139,7 +139,6 @@ def create_shipment():
             status="Pending",
             payment_status="Unpaid",
             notes=data.get("notes"),
-            items=json.dumps(data["items"]),
             customer_id=target_id,
             driver_id=data.get("driver_id"),  # Optional: Admin might assign later
             created_at=datetime.utcnow(),
@@ -151,6 +150,7 @@ def create_shipment():
 
     except Exception as e:
         db.session.rollback()
+        print(e)
         return jsonify({"error": str(e)}), 400
 
 

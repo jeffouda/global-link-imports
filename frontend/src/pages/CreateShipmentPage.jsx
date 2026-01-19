@@ -57,7 +57,13 @@ const CreateShipmentPage = () => {
       return;
     }
 
+    if (!user || !user.id) {
+      alert('User not authenticated.');
+      return;
+    }
+
     const payload = {
+      customer_id: user.id,
       origin: origin || 'Nairobi',
       destination,
       recipient,
@@ -65,14 +71,24 @@ const CreateShipmentPage = () => {
       notes,
       items: products.map(p => ({ product_id: 1, quantity: p.quantity })) // Using mock product_id for now
     };
-    console.log("Sending Payload:", payload);
+
+    const cleanedPayload = {
+      customer_id: payload.customer_id,
+      origin: payload.origin,
+      destination: payload.destination,
+      weight: payload.weight,
+      recipient: payload.recipient,
+      notes: payload.notes
+    };
+
+    console.log("Sending Payload:", cleanedPayload);
 
     const config = {
       headers: { Authorization: `Bearer ${token}` }
     };
 
     try {
-      const response = await axios.post(`${API_BASE}/shipments/`, payload, config);
+      const response = await axios.post(`${API_BASE}/shipments/`, cleanedPayload, config);
       alert('Shipment Created!');
       localStorage.setItem('refreshDashboard', Date.now().toString());
       navigate('/dashboard');
