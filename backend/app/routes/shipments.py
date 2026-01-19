@@ -144,9 +144,14 @@ def create_shipment():
             created_at=datetime.utcnow(),
         )
 
-        db.session.add(new_shipment)
-        db.session.commit()
-        return jsonify(shipment_schema.dump(new_shipment)), 201
+        try:
+            db.session.add(new_shipment)
+            db.session.commit()
+            return jsonify(shipment_schema.dump(new_shipment)), 201
+        except Exception as e:
+            db.session.rollback()
+            print(str(e))
+            return jsonify({"error": str(e)}), 400
 
     except Exception as e:
         db.session.rollback()

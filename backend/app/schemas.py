@@ -98,9 +98,6 @@ class ShipmentCreateSchema(ma.Schema):
     notes = fields.Str(required=False)
     driver_id = fields.Int(required=False, allow_none=True)
     customer_id = fields.Int(required=False)
-    items = fields.List(
-        fields.Dict(keys=fields.Str(), values=fields.Raw()), required=False
-    )
 
 
 class ShipmentStatusUpdateSchema(ma.Schema):

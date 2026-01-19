@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models.shipment import Shipment
+from app.models.shipment import Shipment, generate_tracking_number
 
 app = create_app()
 
@@ -17,7 +17,7 @@ def update_tracking_numbers():
 
         updated_count = 0
         for shipment in shipments_to_update:
-            shipment.tracking_number = Shipment.generate_tracking_number()
+            shipment.tracking_number = generate_tracking_number()
             updated_count += 1
             print(
                 f"Updated shipment ID {shipment.id} with tracking number: {shipment.tracking_number}"

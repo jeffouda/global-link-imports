@@ -8,6 +8,11 @@ from app import db
 # It tracks the journey of goods from the warehouse to the customer.
 
 
+def generate_tracking_number():
+    """Generate a unique 8-character uppercase alphanumeric tracking number."""
+    return str(uuid.uuid4())[:8].upper()
+
+
 class Shipment(db.Model):
     """
     Model representing a delivery order (Shipment) in the system.
@@ -21,11 +26,6 @@ class Shipment(db.Model):
         payment_status (str): Financial standing of the order (e.g., "Unpaid", "Paid").
         created_at (datetime): Automated timestamp representing when the order was placed.
     """
-
-    @staticmethod
-    def generate_tracking_number():
-        """Generate a unique 8-character uppercase alphanumeric tracking number."""
-        return str(uuid.uuid4())[:8].upper()
 
     __tablename__ = "shipments"
 
