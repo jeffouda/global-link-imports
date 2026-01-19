@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const sanitizeShipment = (data) => {
   return {
     ...data,
+    tracking_number: data.tracking || data.tracking_number,
     items: Array.isArray(data.items) ? data.items : [],
     recipient: data.recipient || 'Unknown',
     weight: data.weight || 0,
@@ -116,12 +117,14 @@ const CustomerDashboard = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {orders.map((order) => (
+          {orders.map((order) => {
+            console.log('Customer Order:', order);
+            return (
             <div key={order.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="text-sm font-mono text-teal-600">Tracking ID: #{order.id}</p>
-                  <p className="text-xs text-gray-500">Tracking #: {order.tracking_number}</p>
+                  <p className="text-sm font-bold text-slate-900">Tracking ID: {order.tracking_number}</p>
+                  <p className="text-xs text-gray-500">ID: {order.id}</p>
                 </div>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
@@ -137,7 +140,8 @@ const CustomerDashboard = () => {
                 <span className={getPaymentColor(order.payment_status)}>{order.payment_status}</span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

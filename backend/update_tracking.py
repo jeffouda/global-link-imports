@@ -1,12 +1,17 @@
+#!/usr/bin/env python3
+"""
+Script to update existing shipments with missing tracking numbers.
+Run this script to populate tracking numbers for shipments that don't have them.
+"""
+
 from app import create_app, db
 from app.models.shipment import Shipment
 
-app = create_app()
 
-
-@app.cli.command("update-tracking")
 def update_tracking_numbers():
     """Update shipments with missing tracking numbers."""
+    app = create_app()
+
     with app.app_context():
         # Query shipments with empty or None tracking numbers
         shipments_to_update = Shipment.query.filter(
@@ -31,4 +36,4 @@ def update_tracking_numbers():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    update_tracking_numbers()

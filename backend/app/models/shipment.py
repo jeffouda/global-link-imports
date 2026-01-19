@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import uuid
 from app import db
 
 # shipment.py - Shipment Model
@@ -21,13 +22,20 @@ class Shipment(db.Model):
         created_at (datetime): Automated timestamp representing when the order was placed.
     """
 
+    @staticmethod
+    def generate_tracking_number():
+        """Generate a unique 8-character uppercase alphanumeric tracking number."""
+        return str(uuid.uuid4())[:8].upper()
+
     __tablename__ = "shipments"
 
     # 1. Primary Key: Essential for database indexing and identifying unique orders.
     id = db.Column(db.Integer, primary_key=True)
 
     # Tracking number for shipment identification
-    tracking_number = db.Column(db.String(50), unique=True, nullable=False)
+    tracking_number = db.Column(
+        db.String(50), unique=True, nullable=False, default=generate_tracking_number
+    )
 
     # 2. Core Business Attributes:
     # We use default="Pending" to ensure every new shipment starts with a known status.

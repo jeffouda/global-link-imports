@@ -74,9 +74,13 @@ class ShipmentSchema(ma.Schema):
     customer_id = fields.Int()
     driver_id = fields.Int()
     created_at = fields.DateTime()
+    customer_name = fields.Method("get_customer_name")
     customerEmail = fields.Method("get_customer_email")
     driverName = fields.Method("get_driver_name")
     # items = fields.Nested(ShipmentItemSchema, many=True)
+
+    def get_customer_name(self, obj):
+        return obj.customer.username if obj.customer else "Unknown Customer"
 
     def get_customer_email(self, obj):
         return obj.customer.email if obj.customer else None

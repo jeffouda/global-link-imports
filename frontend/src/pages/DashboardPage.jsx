@@ -22,13 +22,14 @@ const DashboardPage = () => {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token')?.replace(/"/g, '');
     return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
   };
 
-  // ROBUST DATA MAPPING 
+  // ROBUST DATA MAPPING
   const mapShipment = (s) => ({
     id: s.id,
     // Check multiple possible names for tracking
@@ -37,18 +38,19 @@ const DashboardPage = () => {
     origin: s.origin || "Unknown",
     destination: s.destination || "Unknown",
     // Check payment_status if payment is null
-    payment: s.payment || s.payment_status || "Unpaid", 
+    payment: s.payment || s.payment_status || "Unpaid",
     customerId: s.customer_id,
-    // FIX: Check customer_email or nested user object
-    customerEmail: s.customerEmail || s.customer_email || s.email || (s.user ? s.user.email : "Unknown Customer"),
+    // FIX: Fallback chain for customer name
+    customerName: s.customer_name || s.customer?.username || s.user?.username || "Name Unavailable",
+    customerEmail: s.customerEmail || s.customer_email || s.email || (s.user ? s.user.email : ""),
     driverId: s.driver_id,
     driverName: s.driverName || (s.driver ? s.driver.username : "Unassigned"),
     createdAt: s.created_at,
     // FIX: Ensure notes are captured
-    notes: s.notes || s.description || "", 
-    items: safeList(s.items).map(i => ({ 
-      product: 'Product ' + (i.product_id || '?'), 
-      quantity: safeNumber(i.quantity) 
+    notes: s.notes || s.description || "",
+    items: safeList(s.items).map(i => ({
+      product: 'Product ' + (i.product_id || '?'),
+      quantity: safeNumber(i.quantity)
     }))
   });
 
@@ -63,13 +65,16 @@ const DashboardPage = () => {
       if (!response.ok) throw new Error('Failed to fetch shipments');
       
       const data = await response.json();
-      
+      console.log('Raw API response:', data);
+
       let list = [];
       if (Array.isArray(data)) list = data;
       else if (data.shipments) list = data.shipments;
       else if (data.data) list = data.data;
 
-      setShipments(list.map(mapShipment));
+      const mapped = list.map(mapShipment);
+      console.log('Mapped shipments:', mapped);
+      setShipments(mapped);
     } catch (error) {
       console.error(error);
       setError('Failed to load shipments');
@@ -86,10 +91,19 @@ const DashboardPage = () => {
   useEffect(() => {
     if (!localStorage.getItem('access_token')) { navigate('/login'); return; }
     if (user.role === 'admin') loadDrivers();
-    
+
     loadShipments();
     const interval = setInterval(loadShipments, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // --- POPULATE EDIT FORM ---
@@ -181,16 +195,16 @@ const DashboardPage = () => {
   if (user.role === 'customer') return <CustomerDashboard />;
 
   return (
-    <div className="min-h-screen bg-slate-50 w-full">
+    <div className="min-h-screen bg-slate-50 w-full pt-24">
       <div className="pb-10 max-w-7xl mx-auto px-4">
-      
+
       {/* HEADER */}
-      <div className={`${user.role === 'admin' ? 'bg-[#1e293b] text-white' : 'bg-white text-gray-900'} p-6 mb-6 flex justify-between items-center rounded-lg shadow-sm mt-4`}>
+      <div className="bg-white p-6 mb-6 flex justify-between items-center rounded-lg shadow-sm mt-4 transition-all duration-300 ${isScrolled ? 'opacity-0 -translate-y-10' : 'opacity-100 translate-y-0'}">
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold text-slate-900">
             {user.role === 'driver' ? 'Driver Dashboard' : 'Admin Dashboard'}
           </h1>
-          <p className={user.role === 'admin' ? 'text-gray-300' : 'text-gray-600'}>
+          <p className="text-slate-500">
             {user.role === 'driver' ? 'View your assigned deliveries and update status' : 'Overview of all logistics'}
           </p>
         </div>
@@ -245,14 +259,16 @@ const DashboardPage = () => {
               {filteredShipments.length === 0 ? (
                 <tr><td colSpan={user.role === 'driver' ? 5 : 6} className="p-4 text-center text-gray-500">No shipments found</td></tr>
               ) : (
-                filteredShipments.map((s) => (
+                filteredShipments.map((s) => {
+                  console.log(s);
+                  return (
                   <tr key={s.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2 font-medium text-cyan-600 text-sm">
                       {s.tracking}
                       <div className="text-xs text-gray-400">ID: {s.id}</div>
                     </td>
                     <td className="px-4 py-2 text-sm">
-                      {s.customerEmail}
+                      {s.customerName}
                       <div className="text-xs text-gray-400">{s.origin} → {s.destination}</div>
                     </td>
                     <td className="px-4 py-2">
@@ -292,7 +308,8 @@ const DashboardPage = () => {
                       )}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

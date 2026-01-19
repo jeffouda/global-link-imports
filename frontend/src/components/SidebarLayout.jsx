@@ -82,9 +82,9 @@ function SidebarContent({ navigation, location, user, logout }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center px-6 py-4 border-b border-slate-700">
-        <Truck className="h-8 w-8 text-blue-400" />
-        <span className="ml-2 text-xl font-bold text-white">GlobalLink</span>
+      <div className="flex items-center px-6 py-4 border-b border-slate-200">
+        <Truck className="h-8 w-8 text-blue-600" />
+        <span className="ml-2 text-xl font-bold text-slate-800">GlobalLink</span>
       </div>
 
       {/* Navigation */}
@@ -97,8 +97,8 @@ function SidebarContent({ navigation, location, user, logout }) {
               to={item.href}
               className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
               <item.icon className="mr-3 h-5 w-5" />
@@ -109,20 +109,20 @@ function SidebarContent({ navigation, location, user, logout }) {
       </nav>
 
       {/* User profile */}
-      <div className="px-4 py-4 border-t border-slate-700">
+      <div className="px-4 py-4 border-t border-slate-200">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <div className="h-8 w-8 rounded-full bg-slate-600 flex items-center justify-center">
-              <User className="h-4 w-4 text-slate-300" />
+            <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center">
+              <User className="h-4 w-4 text-slate-600" />
             </div>
           </div>
           <div className="ml-3 flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.username}</p>
-            <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+            <p className="text-sm font-medium text-slate-800 truncate">{user?.username}</p>
+            <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
           </div>
           <button
             onClick={logout}
-            className="ml-2 p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800"
+            className="ml-2 p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100"
           >
             <X className="h-4 w-4" />
           </button>

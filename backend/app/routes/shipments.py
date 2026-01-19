@@ -64,7 +64,7 @@ def get_shipments():
         )
 
     try:
-        data = [s.to_dict() for s in shipments]
+        data = shipments_schema.dump(shipments)
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 422
@@ -99,8 +99,15 @@ def get_all_shipments():
             joinedload(Shipment.driver),
         ).all()
 
+        # Debug: Check if customer is loaded
+        if shipments:
+            print(f"First shipment customer: {shipments[0].customer}")
+            print(
+                f"Customer username: {shipments[0].customer.username if shipments[0].customer else 'None'}"
+            )
+
         # 4. Return Data
-        data = [s.to_dict() for s in shipments]
+        data = shipments_schema.dump(shipments)
         return jsonify(data), 200
 
     except Exception as e:
@@ -122,12 +129,9 @@ def create_shipment():
         data = shipment_create_schema.load(request.get_json())
 
         # Create the Shipment record
-        tracking_number = str(uuid.uuid4())[:8].upper()
-
         target_id = data.get("customer_id", user_id)
 
         new_shipment = Shipment(
-            tracking_number=tracking_number,
             origin=data["origin"],
             destination=data["destination"],
             recipient=data["recipient"],
@@ -171,7 +175,7 @@ def get_shipment(shipment_id):
     if role not in ["admin", "driver"] and shipment.customer_id != user_id:
         return jsonify({"error": "Access denied"}), 403
 
-    return jsonify(shipment.to_dict()), 200
+    return jsonify(shipment_schema.dump(shipment)), 200
 
 
 @shipment_bp.route("/shipments/<int:shipment_id>", methods=["PATCH"])
