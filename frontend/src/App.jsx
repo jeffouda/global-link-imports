@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import Layout from "./components/Layout";
-import SidebarLayout from "./components/SidebarLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
@@ -36,10 +35,10 @@ function AppContent() {
 
         {/* Other routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/inventory" element={<SidebarLayout><InventoryPage /></SidebarLayout>} />
+        <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
         <Route path="/create-shipment" element={<ProtectedRoute><CreateShipmentPage /></ProtectedRoute>} />
-        <Route path="/shipments" element={<SidebarLayout><ShipmentListPage /></SidebarLayout>} />
-        <Route path="/shipments/:id" element={<SidebarLayout><ShipmentDetailsPage /></SidebarLayout>} />
+        <Route path="/shipments" element={<ProtectedRoute><ShipmentListPage /></ProtectedRoute>} />
+        <Route path="/shipments/:id" element={<ProtectedRoute><ShipmentDetailsPage /></ProtectedRoute>} />
         <Route path="/tracking" element={<ProtectedRoute><TrackOrderPage /></ProtectedRoute>} />
 
         {/* Error pages */}
